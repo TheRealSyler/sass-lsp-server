@@ -1,0 +1,10 @@
+[
+  { "name": "/Reset Tabs", "body": "//R", "desc": "" },
+  { "name": "/Ignore Next line", "body": "//I", "desc": "" },
+  {
+    "name": "*/Import Css Variables",
+    "body": "/import css-variables from $1",
+    "desc": "Import Css variables from, this will import all css variables from the given file,variable scopes are currently not supported."
+  },
+  { "name": "/Space", "body": "//S", "desc": "" }
+]
