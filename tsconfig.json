@@ -8,8 +8,8 @@
     "resolveJsonModule": true,
     "declaration": true,
     "esModuleInterop": true,
-    "outDir": "dist",
-    "rootDir": "src"
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
-  "exclude": ["node_modules", "webpack.config.ts", "src/test"]
+  "exclude": ["node_modules", "src/test", "dist"]
 }

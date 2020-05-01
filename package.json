@@ -4,6 +4,7 @@
   "author": "Syler",
   "license": "MIT",
   "private": true,
+  "main": "./dist/server.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/TheRealSyler/sass-lsp-server"
@@ -14,7 +15,7 @@
   "scripts": {
     "prepack": "yarn build",
     "build": "del ./dist && tsc -b",
-    "watch": "tsc -2",
+    "watch": "tsc -w",
     "test": "jest --coverage",
     "test:ci": "jest --coverage --ci -w 1",
     "test:watch": "jest --clearCache && jest --watch --coverage"
