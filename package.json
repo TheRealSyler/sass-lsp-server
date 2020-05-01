@@ -16,7 +16,7 @@
     "build": "del ./dist && tsc -b",
     "watch": "tsc -2",
     "test": "jest --coverage",
-    "test:ci": "jest --coverage --ci --clearCache -w 1",
+    "test:ci": "jest --coverage --ci -w 1",
     "test:watch": "jest --clearCache && jest --watch --coverage"
   },
   "dependencies": {

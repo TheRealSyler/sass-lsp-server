@@ -4,7 +4,7 @@ test('AST: EmptyLine and empty property', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
     `
-.classa
+.class
 
   margin-top:
 
