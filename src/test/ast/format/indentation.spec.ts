@@ -1,9 +1,11 @@
 import { AbstractSyntaxTree } from '../../../abstractSyntaxTree/abstractSyntaxTree';
+import { createDocumentItem, defaultTestFileSettings } from '../../utils';
 
 test('Sass Format: Indentation & Whitespace', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `
+    createDocumentItem(
+      `
 @import ../files/import1.sass
 
 $test: 23
@@ -45,12 +47,11 @@ $test: 23
                   @include name ($test)
 
 `,
-    `${__dirname}/file.sass`,
-    { insertSpaces: true, tabSize: 2 }
+      `${__dirname}/file.sass`
+    ),
+    defaultTestFileSettings
   );
-  expect(
-    await ast.stringifyFile(`${__dirname}/file.sass`, { insertSpaces: true, tabSize: 2 })
-  ).toEqual(
+  expect(await ast.stringifyFile(`${__dirname}/file.sass`, defaultTestFileSettings)).toEqual(
     `
 @import '../files/import1.sass'
 
@@ -91,16 +92,18 @@ $test: 23
 test('Sass Format: Simple Indentation', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `
+    createDocumentItem(
+      `
   
 .class
     margin: 10px
               padding: 10rem
 `,
-    '/file',
-    { insertSpaces: true, tabSize: 2 }
+      '/file'
+    ),
+    defaultTestFileSettings
   );
-  expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 })).toEqual(
+  expect(await ast.stringifyFile('/file', defaultTestFileSettings)).toEqual(
     `
 .class
   margin: 10px

@@ -1,18 +1,21 @@
 import { AbstractSyntaxTree } from '../../../abstractSyntaxTree/abstractSyntaxTree';
+import { createDocumentItem, defaultTestFileSettings } from '../../utils';
 
-test('Sass Format Case 11', async () => {
+test('AST: (Format) AtExtend', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `
+    createDocumentItem(
+      `
 
     .class
       @extend %profile
         margin: 20px
 `,
-    '/file',
-    { insertSpaces: true, tabSize: 2 }
+      '/file'
+    ),
+    defaultTestFileSettings
   );
-  expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 })).toEqual(
+  expect(await ast.stringifyFile('/file', defaultTestFileSettings)).toEqual(
     `
 .class
   @extend %profile

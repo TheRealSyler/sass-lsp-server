@@ -1,28 +1,30 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
 import { createSassDiagnostic, createRange } from '../../abstractSyntaxTree/diagnostics';
+import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Property Values', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile('.class\n  margin: 2rem auto', '/file', {
-    insertSpaces: false,
-    tabSize: 2,
-  });
-  await ast.parseFile('$var: 20px\n.class\n  margin: $var', '/file/variable', {
-    insertSpaces: false,
-    tabSize: 2,
-  });
-  await ast.parseFile('.class\n  margin: calc(calc(20px - $var2) + $var)', '/file/function', {
-    insertSpaces: false,
-    tabSize: 2,
-  });
-  await ast.parseFile('.class\n  margin: #{calc(100vh - #{$var})}', '/file/interpolation', {
-    insertSpaces: false,
-    tabSize: 2,
-  });
+  await ast.parseFile(
+    createDocumentItem('.class\n  margin: 2rem auto', '/file'),
+    defaultTestFileSettings
+  );
+  await ast.parseFile(
+    createDocumentItem('$var: 20px\n.class\n  margin: $var', '/file/variable'),
+    defaultTestFileSettings
+  );
+  await ast.parseFile(
+    createDocumentItem('.class\n  margin: calc(calc(20px - $var2) + $var)', '/file/function'),
+    defaultTestFileSettings
+  );
+  await ast.parseFile(
+    createDocumentItem('.class\n  margin: #{calc(100vh - #{$var})}', '/file/interpolation'),
+    defaultTestFileSettings
+  );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     '/file': {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           line: 0,
@@ -46,6 +48,7 @@ test('AST: Property Values', async () => {
     },
     '/file/variable': {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -86,6 +89,7 @@ test('AST: Property Values', async () => {
         createSassDiagnostic('variableNotFound', createRange(1, 27, 32), '$var2'),
         createSassDiagnostic('variableNotFound', createRange(1, 36, 40), '$var'),
       ],
+      settings: defaultTestFileSettings,
       body: [
         {
           line: 0,
@@ -126,6 +130,7 @@ test('AST: Property Values', async () => {
     },
     '/file/interpolation': {
       diagnostics: [createSassDiagnostic('variableNotFound', createRange(1, 27, 31), '$var')],
+      settings: defaultTestFileSettings,
       body: [
         {
           line: 0,

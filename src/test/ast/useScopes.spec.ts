@@ -1,24 +1,25 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
 import { createSassDiagnostic, createRange } from '../../abstractSyntaxTree/diagnostics';
+import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Use Scopes', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `@use "./files/import1"
+    createDocumentItem(
+      `@use "./files/import1"
     @use "./files/import2" as *
 .class
   @use "./files/import3"
   margin: $var $var2 $var3 import1.$var`,
-    `${__dirname}/file.sass`,
-    {
-      insertSpaces: false,
-      tabSize: 2,
-    }
+      `${__dirname}/file.sass`
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     [`${__dirname}/files/import1.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -31,6 +32,7 @@ test('AST: Use Scopes', async () => {
     },
     [`${__dirname}/files/import2.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -47,6 +49,7 @@ test('AST: Use Scopes', async () => {
         createSassDiagnostic('variableNotFound', createRange(4, 10, 14), '$var'),
         createSassDiagnostic('variableNotFound', createRange(4, 21, 26), '$var3'),
       ],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'use',

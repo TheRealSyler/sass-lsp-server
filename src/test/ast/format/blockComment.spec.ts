@@ -1,9 +1,11 @@
 import { AbstractSyntaxTree } from '../../../abstractSyntaxTree/abstractSyntaxTree';
+import { createDocumentItem, defaultTestFileSettings } from '../../utils';
 
 test('Sass Format: Block Comment', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `/**
+    createDocumentItem(
+      `/**
 * @comment  
       * test Comment text.  
  		   			*
@@ -11,12 +13,14 @@ test('Sass Format: Block Comment', async () => {
  *
  */
 `,
-    '/file',
-    { insertSpaces: false, tabSize: 2 }
+      '/file'
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     '/file': {
+      settings: defaultTestFileSettings,
       diagnostics: [],
       body: [
         {
@@ -39,7 +43,7 @@ test('Sass Format: Block Comment', async () => {
   };
   expect(ast.files).toStrictEqual(expectedFiles);
 
-  expect(await ast.stringifyFile('/file', { insertSpaces: false, tabSize: 2 })).toBe(`/**
+  expect(await ast.stringifyFile('/file', defaultTestFileSettings)).toBe(`/**
  * @comment
  * test Comment text.
  *

@@ -1,21 +1,25 @@
 import { AbstractSyntaxTree } from '../../../abstractSyntaxTree/abstractSyntaxTree';
 import { createSassDiagnostic, createRange } from '../../../abstractSyntaxTree/diagnostics';
+import { createDocumentItem, defaultTestFileSettings } from '../../utils';
 
 test('Sass Format: Selector Interpolation', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `#{$body}
+    createDocumentItem(
+      `#{$body}
     color: red
 
 #{$main}
   color:red
   #{$var}: 1rem`,
-    '/file',
-    { insertSpaces: true, tabSize: 2 }
+      '/file'
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     '/file': {
+      settings: defaultTestFileSettings,
       diagnostics: [
         createSassDiagnostic('variableNotFound', createRange(0, 2, 7), '$body'),
         createSassDiagnostic('variableNotFound', createRange(3, 2, 7), '$main'),
@@ -83,7 +87,7 @@ test('Sass Format: Selector Interpolation', async () => {
   };
   expect(ast.files).toStrictEqual(expectedFiles);
 
-  expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 })).toBe(`#{$body}
+  expect(await ast.stringifyFile('/file', defaultTestFileSettings)).toBe(`#{$body}
   color: red
 
 #{$main}

@@ -1,19 +1,19 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
 import { createSassDiagnostic, createRange } from '../../abstractSyntaxTree/diagnostics';
+import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Property functions', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `
+    createDocumentItem(
+      `
 .class
   border: solid calc(1rem - 20px) darken(#fff, 0.4)
   margin: #{$var} #{$var2}
 `,
-    `/file`,
-    {
-      insertSpaces: false,
-      tabSize: 2,
-    }
+      `/file`
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
@@ -22,6 +22,7 @@ test('AST: Property functions', async () => {
         createSassDiagnostic('variableNotFound', createRange(3, 12, 16), '$var'),
         createSassDiagnostic('variableNotFound', createRange(3, 20, 25), '$var2'),
       ],
+      settings: defaultTestFileSettings,
       body: [
         { type: 'emptyLine', line: 0 },
         {

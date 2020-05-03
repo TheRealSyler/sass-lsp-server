@@ -1,9 +1,11 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
+import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Format', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `@use "./files/import2"
+    createDocumentItem(
+      `@use "./files/import2"
 @use ./files/import4 as test
 $var: calc(   100vh - 20px)
 .class
@@ -13,16 +15,15 @@ margin-top:  calc( #{ $var } - 20px)
    margin-right:  import2.$var2 
   margin-bottom:test.$var4
 `,
-    `${__dirname}/file.sass`,
-    {
-      insertSpaces: false,
-      tabSize: 2,
-    }
+      `${__dirname}/file.sass`
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     [`${__dirname}/files/import2.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -35,6 +36,7 @@ margin-top:  calc( #{ $var } - 20px)
     },
     [`${__dirname}/files/import3.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -47,6 +49,7 @@ margin-top:  calc( #{ $var } - 20px)
     },
     [`${__dirname}/files/import4.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -59,6 +62,7 @@ margin-top:  calc( #{ $var } - 20px)
     },
     [`${__dirname}/file.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'use',
@@ -180,7 +184,7 @@ margin-top:  calc( #{ $var } - 20px)
   };
   expect(ast.files).toStrictEqual(expectedFiles);
 
-  expect(await ast.stringifyFile(`${__dirname}/file.sass`, { insertSpaces: true, tabSize: 2 }))
+  expect(await ast.stringifyFile(`${__dirname}/file.sass`, defaultTestFileSettings))
     .toEqual(`@use './files/import2'
 @use './files/import4' as test
 $var: calc(100vh - 20px)

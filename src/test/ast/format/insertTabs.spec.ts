@@ -1,9 +1,11 @@
 import { AbstractSyntaxTree } from '../../../abstractSyntaxTree/abstractSyntaxTree';
+import { createDocumentItem, defaultTestFileSettings } from '../../utils';
 
 test('Sass Format: Insert tabs', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `
+    createDocumentItem(
+      `
   
 
 
@@ -17,8 +19,9 @@ test('Sass Format: Insert tabs', async () => {
   .test2
     max-width: 23px  
 `,
-    '/file',
-    { insertSpaces: true, tabSize: 2 }
+      '/file'
+    ),
+    defaultTestFileSettings
   );
   expect(await ast.stringifyFile('/file', { insertSpaces: false, tabSize: 2 })).toEqual(
     `

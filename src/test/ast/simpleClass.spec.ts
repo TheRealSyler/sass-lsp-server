@@ -1,15 +1,17 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
+import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Simple Class', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile('.class\n  margin: 20px\n  &:hover\n    color: red', '/file', {
-    insertSpaces: false,
-    tabSize: 2,
-  });
+  await ast.parseFile(
+    createDocumentItem('.class\n  margin: 20px\n  &:hover\n    color: red', '/file'),
+    defaultTestFileSettings
+  );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     '/file': {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           line: 0,

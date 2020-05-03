@@ -1,19 +1,23 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
 import { createSassDiagnostic, createRange } from '../../abstractSyntaxTree/diagnostics';
+import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('Complex Selector', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `#{$body}.class::hover,  
+    createDocumentItem(
+      `#{$body}.class::hover,  
 .class#id::not(.a)    a[type="button"]   , // asd
 .class .class#id    `,
-    '/file',
-    { insertSpaces: true, tabSize: 2 }
+      '/file'
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     '/file': {
       diagnostics: [createSassDiagnostic('variableNotFound', createRange(0, 2, 7), '$body')],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'selector',
@@ -61,7 +65,7 @@ test('Complex Selector', async () => {
   };
   expect(ast.files).toStrictEqual(expectedFiles);
 
-  expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 })).toBe(
+  expect(await ast.stringifyFile('/file', defaultTestFileSettings)).toBe(
     `#{$body}.class::hover,
 .class#id::not(.a) a[type="button"] , // asd
 .class .class#id`

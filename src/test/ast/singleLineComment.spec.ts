@@ -1,18 +1,22 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
+import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('Single line Comment', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `.class  // class comment
+    createDocumentItem(
+      `.class  // class comment
     // Line comment
   margin:   20px   // prop comment $var  `,
-    '/file',
-    { insertSpaces: false, tabSize: 2 }
+      '/file'
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     '/file': {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'selector',
@@ -46,8 +50,7 @@ test('Single line Comment', async () => {
   };
   expect(ast.files).toStrictEqual(expectedFiles);
 
-  expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 }))
-    .toBe(`.class // class comment
+  expect(await ast.stringifyFile('/file', defaultTestFileSettings)).toBe(`.class // class comment
   // Line comment
   margin: 20px  // prop comment $var`);
 });

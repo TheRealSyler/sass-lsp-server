@@ -1,10 +1,12 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
 import { createSassDiagnostic, createRange } from '../../abstractSyntaxTree/diagnostics';
+import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Variable Scopes', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `$var: 1px
+    createDocumentItem(
+      `$var: 1px
 $notUsedVar: none
 .class
   $var2: 2px
@@ -14,11 +16,9 @@ $notUsedVar: none
 .class2
   $var4: 4px
   margin: $var $var2 $var3 $var4`,
-    '/file',
-    {
-      insertSpaces: false,
-      tabSize: 2,
-    }
+      '/file'
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
@@ -27,6 +27,7 @@ $notUsedVar: none
         createSassDiagnostic('variableNotFound', createRange(9, 15, 20), '$var2'),
         createSassDiagnostic('variableNotFound', createRange(9, 21, 26), '$var3'),
       ],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',

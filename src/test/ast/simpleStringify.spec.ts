@@ -1,18 +1,22 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
+import { defaultTestFileSettings, createDocumentItem } from '../utils';
 
 test('AST: Simple Stringify', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `.class
+    createDocumentItem(
+      `.class
   margin: 20px
   padding: calc(20px + 50%)`,
-    '/file',
-    { insertSpaces: true, tabSize: 2 }
+      '/file'
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     '/file': {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'selector',

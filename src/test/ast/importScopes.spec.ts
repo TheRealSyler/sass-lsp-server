@@ -1,10 +1,12 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
 import { createSassDiagnostic, createRange } from '../../abstractSyntaxTree/diagnostics';
+import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Import Scopes', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `@import "./files/import1"
+    createDocumentItem(
+      `@import "./files/import1"
 @import "./files/import2"
 .class
   @import "./files/import3.sass"
@@ -14,16 +16,15 @@ test('AST: Import Scopes', async () => {
   @import "./files/import5"
   margin: $var $var2 $var3 $var4
   padding: $var5`,
-    `${__dirname}/file.sass`,
-    {
-      insertSpaces: false,
-      tabSize: 2,
-    }
+      `${__dirname}/file.sass`
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     [`${__dirname}/files/import1.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -36,6 +37,7 @@ test('AST: Import Scopes', async () => {
     },
     [`${__dirname}/files/import2.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -48,6 +50,7 @@ test('AST: Import Scopes', async () => {
     },
     [`${__dirname}/files/import3.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -60,6 +63,7 @@ test('AST: Import Scopes', async () => {
     },
     [`${__dirname}/files/import4.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -72,6 +76,7 @@ test('AST: Import Scopes', async () => {
     },
     [`${__dirname}/files/import5.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -87,6 +92,7 @@ test('AST: Import Scopes', async () => {
         createSassDiagnostic('variableNotFound', createRange(8, 21, 26), '$var3'),
         createSassDiagnostic('variableNotFound', createRange(8, 27, 32), '$var4'),
       ],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'import',

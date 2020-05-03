@@ -1,19 +1,20 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
+import { defaultTestFileSettings, createDocumentItem } from '../utils';
 
 test('AST: Simple Import', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    '@import "./files/import1"\n.class\n  margin: $var',
-    `${__dirname}/file.sass`,
-    {
-      insertSpaces: false,
-      tabSize: 2,
-    }
+    createDocumentItem(
+      '@import "./files/import1"\n.class\n  margin: $var',
+      `${__dirname}/file.sass`
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     [`${__dirname}/files/import1.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'variable',
@@ -26,6 +27,7 @@ test('AST: Simple Import', async () => {
     },
     [`${__dirname}/file.sass`]: {
       diagnostics: [],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'import',

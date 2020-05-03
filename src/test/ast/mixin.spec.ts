@@ -1,20 +1,20 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
 import { createSassDiagnostic, createRange } from '../../abstractSyntaxTree/diagnostics';
+import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Mixin', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `=mx1
+    createDocumentItem(
+      `=mx1
   margin: 20px
 =mx2($arg1)
   margin: $arg1
 @mixin mx3 ($arg1: "$nonExistentVar")
 @mixin mx4 ($arg1:   $nonExistentVar)`,
-    `/file`,
-    {
-      insertSpaces: false,
-      tabSize: 2,
-    }
+      `/file`
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
@@ -22,6 +22,7 @@ test('AST: Mixin', async () => {
       diagnostics: [
         createSassDiagnostic('variableNotFound', createRange(5, 21, 36), '$nonExistentVar'),
       ],
+      settings: defaultTestFileSettings,
       body: [
         {
           type: 'mixin',
@@ -85,7 +86,7 @@ test('AST: Mixin', async () => {
   };
   expect(ast.files).toStrictEqual(expectedFiles);
 
-  expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 })).toEqual(`=mx1
+  expect(await ast.stringifyFile('/file', defaultTestFileSettings)).toEqual(`=mx1
   margin: 20px
 =mx2($arg1)
   margin: $arg1

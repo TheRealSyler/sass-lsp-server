@@ -1,24 +1,25 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
+import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: EmptyLine and empty property', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `
+    createDocumentItem(
+      `
 .class
 
   margin-top:
 
 
 `,
-    `/file`,
-    {
-      insertSpaces: false,
-      tabSize: 2,
-    }
+      `/file`
+    ),
+    defaultTestFileSettings
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     '/file': {
+      settings: defaultTestFileSettings,
       diagnostics: [],
       body: [
         { type: 'emptyLine', line: 0 },
@@ -46,13 +47,14 @@ test('AST: EmptyLine and empty property', async () => {
   };
   expect(ast.files).toStrictEqual(expectedFiles);
 
-  expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 })).toEqual(`
+  expect(await ast.stringifyFile('/file', defaultTestFileSettings)).toEqual(`
 .class
 
   margin-top:
 `);
   const expectedFilesAfterFormat: AbstractSyntaxTree['files'] = {
     '/file': {
+      settings: defaultTestFileSettings,
       diagnostics: [],
       body: [
         { type: 'emptyLine', line: 0 },
