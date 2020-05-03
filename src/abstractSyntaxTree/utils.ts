@@ -1,10 +1,4 @@
-import { SassDiagnostic } from './diagnostics';
-import { SassNode, SassNodes } from './nodes';
-
-export interface SassFile {
-  body: SassNode[];
-  diagnostics: SassDiagnostic[];
-}
+import { SassNodes } from './nodes';
 
 export function isUse(text: string) {
   return /^[\t ]*@use/.test(text);
