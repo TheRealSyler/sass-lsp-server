@@ -21,7 +21,9 @@ export const completionItems = {
   globalPropValues: (require('./data/globalPropValues.json') as typeof import('./data/globalPropValues.json')).map(
     mapCompletionItem(CompletionItemKind.Function)
   ),
-  // htmlTags: require('./data/htmlTags.json') as typeof import('./data/htmlTags.json'),
+  htmlTags: (require('./data/htmlTags.json') as typeof import('./data/htmlTags.json')).map<
+    CompletionItem
+  >((i) => ({ label: i, kind: CompletionItemKind.Class })),
   modules: getModules(),
   properties: Object.values(
     require('./data/properties.json') as typeof import('./data/properties.json')
