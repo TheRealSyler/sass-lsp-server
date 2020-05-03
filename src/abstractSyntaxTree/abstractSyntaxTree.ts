@@ -1,12 +1,32 @@
-import { SassFile } from './utils';
-import { SassASTOptions } from './nodes';
 import { StingKeyObj } from '../utils';
-import { ASTParser } from './parse';
+import { AstParse } from './parse';
 import { promises } from 'fs';
 import { ASTStringify } from './stringify';
+import { TextDocumentItem } from 'vscode-languageserver';
+import { extname } from 'path';
+import { SassNode } from './nodes';
+import { SassDiagnostic } from './diagnostics';
+import { FileSettings } from '../server';
+
+export interface SassFile {
+  body: SassNode[];
+  diagnostics: SassDiagnostic[];
+  settings: FileSettings;
+}
 
 export class AbstractSyntaxTree {
   files: StingKeyObj<SassFile> = {};
+
+  // TODO add parse line method
+  async parseFile(document: TextDocumentItem, options?: Partial<FileSettings>) {
+    this.files[document.uri] = await AstParse(document, this, options);
+  }
+
+  // TODO add stringify line method
+  async stringifyFile(uri: string, options?: Partial<FileSettings>) {
+    await this.lookUpFile(uri, options);
+    return new ASTStringify(this.files[uri], options).stringify().replace(/\n$/, '');
+  }
 
   findVariable(uri: string, name: string) {
     const file = this.files[uri];
@@ -21,7 +41,7 @@ export class AbstractSyntaxTree {
     return null;
   }
 
-  async lookUpFile(uri: string, options: SassASTOptions) {
+  async lookUpFile(uri: string, options?: Partial<FileSettings>) {
     // TODO add check and test for circular dependencies
     if (this.files[uri]) {
       return true;
@@ -29,17 +49,11 @@ export class AbstractSyntaxTree {
 
     const text = (await promises.readFile(uri)).toString();
 
-    this.files[uri] = await new ASTParser(uri, options, this).parse(text);
+    this.files[uri] = await AstParse(
+      { languageId: extname(uri), text, uri, version: 0 },
+      this,
+      options
+    );
     return true;
-  }
-  // TODO add parse line method
-  async parseFile(text: string, uri: string, options: SassASTOptions) {
-    this.files[uri] = await new ASTParser(uri, options, this).parse(text);
-  }
-
-  // TODO add stringify line method
-  async stringifyFile(uri: string, options: SassASTOptions) {
-    await this.lookUpFile(uri, options);
-    return new ASTStringify().stringify(this.files[uri], options).replace(/\n$/, '');
   }
 }

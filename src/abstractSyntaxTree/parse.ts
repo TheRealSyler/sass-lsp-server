@@ -1,5 +1,5 @@
-import { createSassNode, isUse, isImport, SassFile } from './utils';
-import { SassNode, SassNodes, NodeValue, SassASTOptions } from './nodes';
+import { createSassNode, isUse, isImport } from './utils';
+import { SassNode, SassNodes, NodeValue } from './nodes';
 import {
   getDistance,
   isProperty,
@@ -18,8 +18,10 @@ import {
 } from 'suf-regex';
 import { resolve } from 'path';
 import { addDotSassToPath } from '../utils';
-import { AbstractSyntaxTree } from './abstractSyntaxTree';
+import { AbstractSyntaxTree, SassFile } from './abstractSyntaxTree';
 import { SassDiagnostic, createSassDiagnostic, createRange } from './diagnostics';
+import { TextDocumentItem } from 'vscode-languageserver';
+import { FileSettings, defaultFileSettings } from '../server';
 
 const importAtPathRegex = /^[\t ]*(@import|@use)[\t ]*['"]?(.*?)['"]?[\t ]*([\t ]+as.*)?$/;
 
@@ -65,19 +67,24 @@ interface ASTParserCurrentContext {
   isLastBlockCommentLine: boolean;
 }
 
-export class ASTParser {
+export async function AstParse(
+  document: TextDocumentItem,
+  ast: AbstractSyntaxTree,
+  _settings?: Partial<FileSettings>
+): Promise<SassFile> {
+  const settings = { ...defaultFileSettings, ...(_settings || {}) };
   /**Stores all nodes. */
-  nodes: SassNode[] = [];
+  const nodes: SassNode[] = [];
 
-  diagnostics: SassDiagnostic[] = [];
+  const diagnostics: SassDiagnostic[] = [];
 
-  scope: ASTScope = {
+  const scope: ASTScope = {
     selectors: [],
     variables: [],
     imports: [],
   };
   /**Stores information about the current line. */
-  current: ASTParserCurrentContext = {
+  const current: ASTParserCurrentContext = {
     index: -1,
     distance: 0,
     line: '',
@@ -87,306 +94,299 @@ export class ASTParser {
     isLastBlockCommentLine: false,
   };
 
-  constructor(public uri: string, public options: SassASTOptions, public ast: AbstractSyntaxTree) {}
+  const lines = document.text.split('\n');
+  let canPushAtUseOrAtForwardNode = true;
+  for (let index = 0; index < lines.length; index++) {
+    current.index = index;
+    current.line = lines[index];
+    current.type = getLineType(current.line);
+    current.distance = getDistance(current.line, settings.tabSize);
+    current.level = Math.round(current.distance / settings.tabSize);
 
-  async parse(text: string): Promise<SassFile> {
-    const lines = text.split('\n');
-    let canPushAtUseOrAtForwardNode = true;
-    for (let index = 0; index < lines.length; index++) {
-      this.current.index = index;
-      this.current.line = lines[index];
-      this.current.type = this.getLineType(this.current.line);
-      this.current.distance = getDistance(this.current.line, this.options.tabSize);
-      this.current.level = Math.round(this.current.distance / this.options.tabSize);
-
-      if (this.current.type !== 'use') {
-        canPushAtUseOrAtForwardNode = false;
-      }
-      switch (this.current.type) {
-        case 'blockComment':
-          {
-            let value = this.current.line.replace(/^[\t ]*/, ' ').trimEnd();
-            if (!this.current.blockCommentNode) {
-              this.current.blockCommentNode = createSassNode<'blockComment'>({
-                body: [],
-                level: this.current.level,
-                line: this.current.index,
-                type: 'blockComment',
-              });
-              this.pushNode(this.current.blockCommentNode);
-              value = value.trimLeft();
-            }
-
-            this.current.blockCommentNode.body.push({
-              line: this.current.index,
-              value,
-            });
-            if (this.current.isLastBlockCommentLine) {
-              this.current.blockCommentNode = null;
-              this.current.isLastBlockCommentLine = false;
-            }
-          }
-          break;
-        case 'selector':
-          {
-            const node = createSassNode<'selector'>({
+    if (current.type !== 'use') {
+      canPushAtUseOrAtForwardNode = false;
+    }
+    switch (current.type) {
+      case 'blockComment':
+        {
+          let value = current.line.replace(/^[\t ]*/, ' ').trimEnd();
+          if (!current.blockCommentNode) {
+            current.blockCommentNode = createSassNode<'blockComment'>({
               body: [],
-              level: this.getMinLevel(),
-              line: index,
-              type: this.current.type,
-              value: this.parseExpression(
-                this.current.line.trimStart(),
-                this.current.distance,
-                true
-              ),
+              level: current.level,
+              line: current.index,
+              type: 'blockComment',
             });
-
-            this.pushNode(node);
-
-            this.limitScope();
-
-            this.scope.selectors.push(node);
+            pushNode(current.blockCommentNode);
+            value = value.trimLeft();
           }
-          break;
-        case 'mixin':
-          {
-            const { args, value, mixinType } = this.parseMixin(this.current.line);
-            const node = createSassNode<'mixin'>({
-              body: [],
-              level: this.getMinLevel(),
+
+          current.blockCommentNode.body.push({
+            line: current.index,
+            value,
+          });
+          if (current.isLastBlockCommentLine) {
+            current.blockCommentNode = null;
+            current.isLastBlockCommentLine = false;
+          }
+        }
+        break;
+      case 'selector':
+        {
+          const node = createSassNode<'selector'>({
+            body: [],
+            level: getMinLevel(),
+            line: index,
+            type: current.type,
+            value: parseExpression(current.line.trimStart(), current.distance, true),
+          });
+
+          pushNode(node);
+
+          limitScope();
+
+          scope.selectors.push(node);
+        }
+        break;
+      case 'mixin':
+        {
+          const { args, value, mixinType } = parseMixin(current.line);
+          const node = createSassNode<'mixin'>({
+            body: [],
+            level: getMinLevel(),
+            line: index,
+            type: current.type,
+            value,
+            args,
+            mixinType,
+          });
+
+          pushNode(node);
+
+          limitScope();
+
+          scope.selectors.push(node);
+        }
+        break;
+
+      case 'property':
+        {
+          const { value, body } = parseProperty(current.line, false);
+          scope.selectors[scope.selectors.length - 1].body.push(
+            createSassNode<'property'>({
+              body,
+              level: getPropLevel(),
               line: index,
-              type: this.current.type,
+              type: current.type,
               value,
-              args,
-              mixinType,
-            });
+            })
+          );
+        }
+        break;
 
-            this.pushNode(node);
+      case 'variable':
+        {
+          const { value, body } = parseProperty(current.line, true);
+          const node = createSassNode<'variable'>({
+            body: body,
+            level: getMinLevel(),
+            line: index,
+            type: current.type,
+            value,
+          });
+          pushNode(node);
+        }
+        break;
 
-            this.limitScope();
+      case 'import':
+        {
+          const path = current.line.replace(importAtPathRegex, '$2');
+          const uri = resolve(document.uri, '../', addDotSassToPath(path));
+          const clampedLevel = getMinLevel();
 
-            this.scope.selectors.push(node);
-          }
-          break;
+          const node = createSassNode<'import'>({
+            uri,
+            level: clampedLevel,
+            line: index,
+            type: current.type,
+            value: path,
+          });
+          pushNode(node);
 
-        case 'property':
-          {
-            const { value, body } = this.parseProperty(this.current.line, false);
-            this.scope.selectors[this.scope.selectors.length - 1].body.push(
-              createSassNode<'property'>({
-                body,
-                level: this.getPropLevel(),
-                line: index,
-                type: this.current.type,
-                value,
-              })
-            );
-          }
-          break;
+          await ast.lookUpFile(uri, settings);
+        }
+        break;
+      case 'use':
+        {
+          const clampedLevel = getMinLevel();
+          if (canPushAtUseOrAtForwardNode) {
+            // TODO ADD @use with functionality
+            const path = current.line.replace(importAtPathRegex, '$2');
+            const uri = resolve(document.uri, '../', addDotSassToPath(path));
+            let namespace: string | null = current.line
+              .replace(/(.*?as |@use)[\t ]*['"]?.*?([*\w-]*?)['"]?[\t ]*$/, '$2')
+              .trim();
+            namespace = namespace === '*' ? null : namespace;
 
-        case 'variable':
-          {
-            const { value, body } = this.parseProperty(this.current.line, true);
-            const node = createSassNode<'variable'>({
-              body: body,
-              level: this.getMinLevel(),
-              line: index,
-              type: this.current.type,
-              value,
-            });
-            this.pushNode(node);
-          }
-          break;
-
-        case 'import':
-          {
-            const path = this.current.line.replace(importAtPathRegex, '$2');
-            const uri = resolve(this.uri, '../', addDotSassToPath(path));
-            const clampedLevel = this.getMinLevel();
-
-            const node = createSassNode<'import'>({
+            const node = createSassNode<'use'>({
               uri,
-              level: clampedLevel,
               line: index,
-              type: this.current.type,
+              namespace,
+              type: current.type,
               value: path,
             });
-            this.pushNode(node);
+            pushNode(node);
 
-            await this.ast.lookUpFile(uri, this.options);
-          }
-          break;
-        case 'use':
-          {
-            const clampedLevel = this.getMinLevel();
-            if (canPushAtUseOrAtForwardNode) {
-              // TODO ADD @use with functionality
-              const path = this.current.line.replace(importAtPathRegex, '$2');
-              const uri = resolve(this.uri, '../', addDotSassToPath(path));
-              let namespace: string | null = this.current.line
-                .replace(/(.*?as |@use)[\t ]*['"]?.*?([*\w-]*?)['"]?[\t ]*$/, '$2')
-                .trim();
-              namespace = namespace === '*' ? null : namespace;
-
-              const node = createSassNode<'use'>({
-                uri,
-                line: index,
-                namespace,
-                type: this.current.type,
-                value: path,
-              });
-              this.pushNode(node);
-
-              await this.ast.lookUpFile(uri, this.options);
-            } else {
-              this.diagnostics.push(
-                createSassDiagnostic(
-                  '@useNotTopLevel',
-                  createRange(index, this.current.distance, this.current.line.length)
-                )
-              );
-              this.pushNode(
-                createSassNode<'comment'>({
-                  level: clampedLevel,
-                  line: index,
-                  type: 'comment',
-                  value: '// '.concat(this.current.line.trimLeft()),
-                })
-              );
-            }
-          }
-          break;
-
-        case 'extend':
-          {
-            this.pushNode(
-              createSassNode<'extend'>({
-                line: this.current.index,
-                type: 'extend',
-                level: this.getPropLevel(),
-                value: this.current.line.replace(/^[\t ]*@extend/, '').trim(),
-              })
+            await ast.lookUpFile(uri, settings);
+          } else {
+            diagnostics.push(
+              createSassDiagnostic(
+                '@useNotTopLevel',
+                createRange(index, current.distance, current.line.length)
+              )
             );
-          }
-          break;
-        case 'include':
-          {
-            this.pushNode(
-              createSassNode<'include'>({
-                line: this.current.index,
-                type: 'include',
-                level: this.getPropLevel(),
-                value: this.current.line.replace(/^[\t ]*(@include|\+)/, '').trim(),
-                includeType: this.current.line.replace(/^[\t ]*(@include|\+)/, '$1') as any,
-              })
-            );
-          }
-          break;
-
-        case 'emptyLine':
-          {
-            this.current.distance = this.scope.selectors.length * this.options.tabSize;
-            this.current.level = this.scope.selectors.length;
-            this.pushNode(
-              createSassNode<'emptyLine'>({ line: this.current.index, type: 'emptyLine' })
-            );
-          }
-          break;
-
-        case 'comment':
-          {
-            this.pushNode(
+            pushNode(
               createSassNode<'comment'>({
-                level: this.getMinLevel(),
+                level: clampedLevel,
                 line: index,
                 type: 'comment',
-                value: this.current.line.trimLeft(),
-              }),
-              false
-            );
-          }
-          break;
-        case 'literal':
-          {
-            this.pushNode(
-              createSassNode<'literal'>({
-                type: 'literal',
-                line: this.current.index,
-                value: this.current.line,
+                value: '// '.concat(current.line.trimLeft()),
               })
             );
           }
-          break;
+        }
+        break;
 
-        default:
-          //TODO Handle default case ?
-          //throw
-          console.log(
-            `\x1b[38;2;255;0;0;1mAST: PARSE DEFAULT CASE\x1b[m Line: ${this.current.line} Type: ${this.current.type} Index: ${index}`
+      case 'extend':
+        {
+          pushNode(
+            createSassNode<'extend'>({
+              line: current.index,
+              type: 'extend',
+              level: getPropLevel(),
+              value: current.line.replace(/^[\t ]*@extend/, '').trim(),
+            })
           );
-      }
+        }
+        break;
+      case 'include':
+        {
+          pushNode(
+            createSassNode<'include'>({
+              line: current.index,
+              type: 'include',
+              level: getPropLevel(),
+              value: current.line.replace(/^[\t ]*(@include|\+)/, '').trim(),
+              includeType: current.line.replace(/^[\t ]*(@include|\+)/, '$1') as any,
+            })
+          );
+        }
+        break;
+
+      case 'emptyLine':
+        {
+          current.distance = scope.selectors.length * settings.tabSize;
+          current.level = scope.selectors.length;
+          pushNode(
+            createSassNode<'emptyLine'>({ line: current.index, type: 'emptyLine' })
+          );
+        }
+        break;
+
+      case 'comment':
+        {
+          pushNode(
+            createSassNode<'comment'>({
+              level: getMinLevel(),
+              line: index,
+              type: 'comment',
+              value: current.line.trimLeft(),
+            }),
+            false
+          );
+        }
+        break;
+      case 'literal':
+        {
+          pushNode(
+            createSassNode<'literal'>({
+              type: 'literal',
+              line: current.index,
+              value: current.line,
+            })
+          );
+        }
+        break;
+
+      default:
+        //TODO Handle default case ?
+        //throw
+        console.log(
+          `\x1b[38;2;255;0;0;1mAST: PARSE DEFAULT CASE\x1b[m Line: ${current.line} Type: ${current.type} Index: ${index}`
+        );
     }
-
-    return {
-      body: this.nodes,
-      diagnostics: this.diagnostics,
-    };
   }
 
-  private getPropLevel(): number {
-    return Math.min(Math.max(this.current.level, 1), this.scope.selectors.length);
+  return {
+    body: nodes,
+    diagnostics: diagnostics,
+    settings: settings,
+  };
+
+  function getPropLevel(): number {
+    return Math.min(Math.max(current.level, 1), scope.selectors.length);
   }
-  private getMinLevel() {
-    return Math.min(this.current.level, this.scope.selectors.length);
+  function getMinLevel() {
+    return Math.min(current.level, scope.selectors.length);
   }
 
   /**Removes all nodes that should not be accessible from the current scope. */
-  private limitScope() {
-    if (this.scope.selectors.length > this.current.level) {
-      this.scope.selectors.splice(this.current.level);
-      this.scope.variables.splice(Math.max(this.current.level, 1));
-      this.scope.imports.splice(Math.max(this.current.level, 1));
+  function limitScope() {
+    if (scope.selectors.length > current.level) {
+      scope.selectors.splice(current.level);
+      scope.variables.splice(Math.max(current.level, 1));
+      scope.imports.splice(Math.max(current.level, 1));
     }
   }
 
-  private pushNode(node: SassNode, pushDiagnostics = true) {
+  function pushNode(node: SassNode, pushDiagnostics = true) {
     // TODO EXTEND DIAGNOSTIC, invalid indentation, example, (tabSize: 2) ' .class'
-    if (this.current.distance < this.options.tabSize || this.scope.selectors.length === 0) {
-      this.nodes.push(node);
-    } else if (this.current.level > this.scope.selectors.length) {
+    if (current.distance < settings.tabSize || scope.selectors.length === 0) {
+      nodes.push(node);
+    } else if (current.level > scope.selectors.length) {
       if (pushDiagnostics) {
-        this.diagnostics.push(
+        diagnostics.push(
           createSassDiagnostic(
             'invalidIndentation',
-            createRange(this.current.index, this.current.distance, this.current.line.length),
-            this.scope.selectors.length,
-            this.options.tabSize,
-            this.options.insertSpaces
+            createRange(current.index, current.distance, current.line.length),
+            scope.selectors.length,
+            settings.tabSize,
+            settings.insertSpaces
           )
         );
       }
-      this.scope.selectors[this.scope.selectors.length - 1].body.push(node);
+      scope.selectors[scope.selectors.length - 1].body.push(node);
     } else {
-      this.scope.selectors[this.current.level - 1].body.push(node);
+      scope.selectors[current.level - 1].body.push(node);
     }
 
     if (node.type === 'variable') {
-      if (this.scope.variables[this.current.level]) {
-        this.scope.variables[this.current.level].push(node);
+      if (scope.variables[current.level]) {
+        scope.variables[current.level].push(node);
       } else {
-        this.scope.variables.push([node]);
+        scope.variables.push([node]);
       }
     } else if (node.type === 'import' || node.type === 'use') {
-      if (this.scope.imports[this.current.level]) {
-        this.scope.imports[this.current.level].push(node);
+      if (scope.imports[current.level]) {
+        scope.imports[current.level].push(node);
       } else {
-        this.scope.imports.push([node]);
+        scope.imports.push([node]);
       }
     }
   }
 
   /**Parse the values of a property or variable declaration. */
-  private parseProperty<R extends boolean>(
+  function parseProperty<R extends boolean>(
     line: string,
     stringVal: R
   ): { value: R extends true ? string : NodeValue[]; body: NodeValue[] } {
@@ -396,12 +396,12 @@ export class ASTParser {
     const rawExpression = split[2];
 
     return {
-      value: (stringVal ? value : this.parseExpression(value, this.current.distance)) as any,
-      body: this.parseExpression(rawExpression, value.length + 1 + this.current.distance),
+      value: (stringVal ? value : parseExpression(value, current.distance)) as any,
+      body: parseExpression(rawExpression, value.length + 1 + current.distance),
     };
   }
 
-  private parseExpression(expression: string, startOffset: number, selectorMode = false) {
+  function parseExpression(expression: string, startOffset: number, selectorMode = false) {
     let token = '';
     const body: NodeValue[] = [];
 
@@ -430,7 +430,7 @@ export class ASTParser {
           createSassNode<'variableRef'>({
             type: 'variableRef',
             value,
-            ref: this.getVarRef(val, namespace || null, startOffset + i - value.length),
+            ref: getVarRef(val, namespace || null, startOffset + i - value.length),
           })
         );
       } else if (value) {
@@ -520,7 +520,7 @@ export class ASTParser {
     return body;
   }
 
-  private parseMixin(
+  function parseMixin(
     line: string
   ): {
     value: string;
@@ -567,7 +567,7 @@ export class ASTParser {
           if (isLastChar) {
             args.push({
               value: argName,
-              body: this.parseExpression(expression, offset + i + 1 - (expression.length - 1)),
+              body: parseExpression(expression, offset + i + 1 - (expression.length - 1)),
             });
           }
         } else if (char === '"') {
@@ -583,7 +583,7 @@ export class ASTParser {
 
           args.push({
             value: argName,
-            body: this.parseExpression(expression, offset + i + 1 - (expression.length - 1)),
+            body: parseExpression(expression, offset + i + 1 - (expression.length - 1)),
           });
           expression = '';
           argName = '';
@@ -597,39 +597,39 @@ export class ASTParser {
     return { value, args, mixinType };
   }
 
-  private getVarRef(
+  function getVarRef(
     name: string,
     namespace: null | string,
     offset: number
   ): SassNodes['variableRef']['ref'] {
-    const varNode: SassNodes['variable'] | null | undefined = this.scope.variables
+    const varNode: SassNodes['variable'] | null | undefined = scope.variables
       .flat()
       .find((v) => v.value === name);
     if (varNode) {
-      return { uri: this.uri, line: varNode.line };
+      return { uri: document.uri, line: varNode.line };
     }
 
-    const mixinVar = this.findVariableInMixinArgs(name);
+    const mixinVar = findVariableInMixinArgs(name);
     if (mixinVar) {
       return mixinVar;
     }
-    const importVar = this.findVariableInImports(name, namespace);
+    const importVar = findVariableInImports(name, namespace);
     if (importVar) {
       return importVar;
     }
 
-    this.diagnostics.push(
+    diagnostics.push(
       createSassDiagnostic(
         'variableNotFound',
-        createRange(this.current.index, offset, offset + name.length),
+        createRange(current.index, offset, offset + name.length),
         name
       )
     );
     return null;
   }
 
-  private findVariableInMixinArgs(name: string): SassNodes['variableRef']['ref'] {
-    const selectors = this.scope.selectors;
+  function findVariableInMixinArgs(name: string): SassNodes['variableRef']['ref'] {
+    const selectors = scope.selectors;
 
     for (let i = 0; i < selectors.length; i++) {
       const selector = selectors[i];
@@ -637,7 +637,7 @@ export class ASTParser {
         for (let i = 0; i < selector.args.length; i++) {
           const arg = selector.args[i];
           if (arg.value === name) {
-            return { line: selector.line, uri: this.uri };
+            return { line: selector.line, uri: document.uri };
           }
         }
       }
@@ -645,11 +645,11 @@ export class ASTParser {
     return null;
   }
 
-  private findVariableInImports(
+  function findVariableInImports(
     name: string,
     namespace: null | string
   ): SassNodes['variableRef']['ref'] {
-    const imports = this.scope.imports.flat();
+    const imports = scope.imports.flat();
 
     for (let i = 0; i < imports.length; i++) {
       const importNode = imports[i];
@@ -657,7 +657,7 @@ export class ASTParser {
       if (importNode.type === 'use' && importNode.namespace !== namespace) {
         continue;
       }
-      const varNode = this.ast.findVariable(importNode.uri, name);
+      const varNode = ast.findVariable(importNode.uri, name);
       if (varNode) {
         return { uri: importNode.uri, line: varNode.line };
       }
@@ -666,11 +666,11 @@ export class ASTParser {
     return null;
   }
 
-  private getLineType(line: string): keyof SassNodes {
+  function getLineType(line: string): keyof SassNodes {
     const isInterpolatedProp = isInterpolatedProperty(line);
-    if (this.current.blockCommentNode) {
+    if (current.blockCommentNode) {
       if (isBlockCommentEnd(line)) {
-        this.current.isLastBlockCommentLine = true;
+        current.isLastBlockCommentLine = true;
       }
       return 'blockComment';
     } else if (isEmptyOrWhitespace(line)) {
