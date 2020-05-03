@@ -22,6 +22,10 @@ import { AbstractSyntaxTree } from './abstractSyntaxTree/abstractSyntaxTree';
 interface ServerSettings {
   maxNumberOfProblems: number;
 }
+export type FileSettings = {
+  tabSize: number;
+  insertSpaces: boolean;
+};
 
 class Server {
   hasConfigurationCapability = false;

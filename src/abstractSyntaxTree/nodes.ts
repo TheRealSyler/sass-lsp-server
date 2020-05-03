@@ -105,10 +105,6 @@ interface MixinNode extends BaseNode {
 
 type _SassNode<T extends keyof SassNodes> = SassNodes[T];
 
-export type SassASTOptions = {
-  tabSize: number;
-  insertSpaces: boolean;
-};
 export type SassNode = _SassNode<keyof SassNodes>;
 export interface SassNodes {
   import: ImportNode;
