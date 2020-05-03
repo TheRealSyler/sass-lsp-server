@@ -1,7 +1,7 @@
 import { StingKeyObj } from '../utils';
 import { AstParse } from './parse';
 import { promises } from 'fs';
-import { ASTStringify } from './stringify';
+import { AstStringify } from './stringify';
 import { TextDocumentItem } from 'vscode-languageserver';
 import { extname } from 'path';
 import { SassNode } from './nodes';
@@ -25,7 +25,7 @@ export class AbstractSyntaxTree {
   // TODO add stringify line method
   async stringifyFile(uri: string, options?: Partial<FileSettings>) {
     await this.lookUpFile(uri, options);
-    return new ASTStringify(this.files[uri], options).stringify().replace(/\n$/, '');
+    return AstStringify(this.files[uri], options).replace(/\n$/, '');
   }
 
   findVariable(uri: string, name: string) {
