@@ -22,7 +22,15 @@ export class AbstractSyntaxTree {
     this.files[document.uri] = await AstParse(document, this, options);
   }
 
-  // TODO add stringify line method
+  findNode(uri: string, line: number): SassNode | null {
+    const file = this.files[uri];
+    if (file) {
+      return findNode(file.body, line);
+    }
+    return null;
+  }
+
+  // TODO add stringify range method
   async stringifyFile(uri: string, options?: Partial<FileSettings>) {
     await this.lookUpFile(uri, options);
     return AstStringify(this.files[uri], options).replace(/\n$/, '');

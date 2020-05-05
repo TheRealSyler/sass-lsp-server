@@ -1,50 +1,54 @@
 export interface BaseNode {
-  body: SassNode[] | null;
+  body: LineNode[] | ValueNode[] | null;
   line: number;
   level: number;
   type: keyof SassNodes;
-  value: string | NodeValue[];
+  value: string | ValueNode[];
 }
-export type NodeValue = LiteralNode | VariableRefNode | ExpressionNode;
 
 export interface SelectorNode extends BaseNode {
-  body: SassNode[];
-  value: NodeValue[];
+  body: LineNode[];
+  value: ValueNode[];
   type: 'selector';
 }
 
-interface ImportNode extends Omit<BaseNode, 'body'> {
+export interface ImportNode extends Omit<BaseNode, 'body'> {
   value: string;
   uri: string;
   type: 'import';
 }
-interface UseNode extends Omit<BaseNode, 'body' | 'level'> {
+export interface UseNode extends Omit<BaseNode, 'body' | 'level'> {
   value: string;
   uri: string;
   namespace: string | null;
   type: 'use';
 }
-interface CommentNode extends Omit<BaseNode, 'body'> {
+export interface CommentNode extends Omit<BaseNode, 'body'> {
   value: string;
   type: 'comment';
 }
 
-interface BlockCommentContentNode {
+export interface BlockCommentContentNode {
   value: string;
+  type: 'blockCommentContent';
   line: number;
 }
 
-interface BlockCommentNode extends Omit<BaseNode, 'body' | 'value'> {
+export interface BlockCommentNode extends Omit<BaseNode, 'body' | 'value'> {
   body: BlockCommentContentNode[];
   type: 'blockComment';
 }
 
-interface LiteralNode {
+export interface LiteralNode {
   type: 'literal';
-  line?: number;
+  line: number;
   value: string;
 }
-interface VariableRefNode {
+export interface LiteralValueNode {
+  type: 'literalValue';
+  value: string;
+}
+export interface VariableRefNode {
   type: 'variableRef';
   ref: {
     uri: string;
@@ -53,15 +57,15 @@ interface VariableRefNode {
   value: string;
 }
 interface ExpressionNodeBase {
-  body: NodeValue[];
+  body: ValueNode[];
   type: 'expression';
   expressionType: keyof SassExpressionNodes;
 }
-interface FuncExpressionNode extends ExpressionNodeBase {
+export interface FuncExpressionNode extends ExpressionNodeBase {
   expressionType: 'func';
   funcName: string;
 }
-interface InterpolationExpressionNode extends ExpressionNodeBase {
+export interface InterpolationExpressionNode extends ExpressionNodeBase {
   expressionType: 'interpolated';
 }
 interface SassExpressionNodes {
@@ -69,52 +73,60 @@ interface SassExpressionNodes {
   interpolated: InterpolationExpressionNode;
 }
 
-type ExpressionNode = SassExpressionNodes[keyof SassExpressionNodes];
-interface PropertyNode extends BaseNode {
-  body: NodeValue[];
-  value: NodeValue[];
+export type ExpressionNode = SassExpressionNodes[keyof SassExpressionNodes];
+
+export interface PropertyNode extends BaseNode {
+  body: ValueNode[];
+  value: ValueNode[];
   type: 'property';
 }
 export interface VariableNode extends BaseNode {
-  body: NodeValue[];
+  body: ValueNode[];
   value: string;
   type: 'variable';
 }
-interface EmptyLineNode extends Pick<BaseNode, 'type' | 'line'> {
+export interface EmptyLineNode extends Pick<BaseNode, 'type' | 'line'> {
   type: 'emptyLine';
 }
-interface ExtendNode extends Pick<BaseNode, 'type' | 'line' | 'value' | 'level'> {
+export interface ExtendNode extends Pick<BaseNode, 'type' | 'line' | 'value' | 'level'> {
   type: 'extend';
 }
-interface IncludeNode extends Pick<BaseNode, 'type' | 'line' | 'value' | 'level'> {
+export interface IncludeNode extends Pick<BaseNode, 'type' | 'line' | 'value' | 'level'> {
   type: 'include';
   includeType: '@include' | '+';
 }
 
-interface FontFaceNode extends Omit<BaseNode, 'value'> {
+export interface FontFaceNode extends Omit<BaseNode, 'value'> {
   type: 'fontFace';
-  body: SassNode[];
+  body: LineNode[];
 }
 
-interface MixinNode extends BaseNode {
-  body: SassNode[];
+export interface MixinNode extends BaseNode {
+  body: LineNode[];
   type: 'mixin';
   mixinType: '@mixin' | '=';
-  args: { value: string; body: NodeValue[] | null }[];
+  args: { value: string; body: ValueNode[] | null }[];
 }
 
 type _SassNode<T extends keyof SassNodes> = SassNodes[T];
 
 export type SassNode = _SassNode<keyof SassNodes>;
-export interface SassNodes {
+
+type _SassLineNode<T extends keyof LineNodes> = LineNodes[T];
+
+/**Nodes that are not excursively a value for other nodes.*/
+export type LineNode = _SassLineNode<keyof LineNodes>;
+
+type _SassValueNode<T extends keyof ValueNodes> = ValueNodes[T];
+/**Nodes that represent a value for another node. */
+export type ValueNode = _SassValueNode<keyof ValueNodes>;
+
+interface LineNodes {
   import: ImportNode;
   use: UseNode;
   selector: SelectorNode;
-  literal: LiteralNode;
   property: PropertyNode;
   variable: VariableNode;
-  variableRef: VariableRefNode;
-  expression: ExpressionNode;
   comment: CommentNode;
   emptyLine: EmptyLineNode;
   mixin: MixinNode;
@@ -122,4 +134,15 @@ export interface SassNodes {
   blockComment: BlockCommentNode;
   include: IncludeNode;
   fontFace: FontFaceNode;
+  literal: LiteralNode;
+}
+
+interface ValueNodes {
+  literalValue: LiteralValueNode;
+  expression: ExpressionNode;
+  variableRef: VariableRefNode;
+}
+
+export interface SassNodes extends LineNodes, ValueNodes {
+  blockCommentContent: BlockCommentContentNode;
 }
