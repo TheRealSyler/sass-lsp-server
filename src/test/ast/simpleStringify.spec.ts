@@ -3,7 +3,7 @@ import { defaultTestFileSettings, createDocumentItem } from '../utils';
 
 test('AST: Simple Stringify', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `.class
   margin: 20px
@@ -22,27 +22,27 @@ test('AST: Simple Stringify', async () => {
           type: 'selector',
           line: 0,
           level: 0,
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               type: 'property',
               level: 1,
               line: 1,
-              value: [{ type: 'literal', value: 'margin' }],
-              body: [{ type: 'literal', value: '20px' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
+              body: [{ type: 'literalValue', value: '20px' }],
             },
             {
               type: 'property',
               level: 1,
               line: 2,
-              value: [{ type: 'literal', value: 'padding' }],
+              value: [{ type: 'literalValue', value: 'padding' }],
               body: [
                 {
                   type: 'expression',
                   body: [
-                    { type: 'literal', value: '20px' },
-                    { type: 'literal', value: '+' },
-                    { type: 'literal', value: '50%' },
+                    { type: 'literalValue', value: '20px' },
+                    { type: 'literalValue', value: '+' },
+                    { type: 'literalValue', value: '50%' },
                   ],
                   expressionType: 'func',
                   funcName: 'calc',

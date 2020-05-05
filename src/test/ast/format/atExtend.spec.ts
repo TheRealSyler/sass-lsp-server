@@ -3,7 +3,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../../utils';
 
 test('AST: (Format) AtExtend', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `
 

@@ -55,31 +55,31 @@ test('Server: Server', async () => {
   };
 
   expect(server.ast.files).toStrictEqual(expectedFilesAfterCreateItem);
-  // TODO add test after implementing onDidChangeTextDocument
-  // controller.onDidChangeTextDocument({
-  //   textDocument: { uri: '/file', version: 1 },
-  //   contentChanges: [
-  //     { range: { end: { line: 2, character: 0 }, start: { line: 1, character: 0 } }, text: '' },
-  //   ],
-  // });
 
-  // await sleep(100);
+  controller.onDidChangeTextDocument({
+    textDocument: { uri: '/file', version: 1 },
+    contentChanges: [
+      { range: { end: { line: 2, character: 0 }, start: { line: 1, character: 0 } }, text: '' },
+    ],
+  });
 
-  // const expectedFilesAfterDeleteLine: AbstractSyntaxTree['files'] = {
-  //   '/file': {
-  //     body: [
-  //       {
-  //         line: 0,
-  //         level: 0,
-  //         type: 'selector',
-  //         value: [{ type: 'literalValue', value: '.class' }],
-  //         body: [],
-  //       },
-  //     ],
-  //     diagnostics: [],
-  //     settings: { insertSpaces: true, tabSize: 4 },
-  //   },
-  // };
+  await sleep(100);
 
-  // expect(server.ast.files).toStrictEqual(expectedFilesAfterDeleteLine);
+  const expectedFilesAfterDeleteLine: AbstractSyntaxTree['files'] = {
+    '/file': {
+      body: [
+        {
+          line: 0,
+          level: 0,
+          type: 'selector',
+          value: [{ type: 'literalValue', value: '.class' }],
+          body: [],
+        },
+      ],
+      diagnostics: [],
+      settings: { insertSpaces: true, tabSize: 4 },
+    },
+  };
+
+  expect(server.ast.files).toStrictEqual(expectedFilesAfterDeleteLine);
 });

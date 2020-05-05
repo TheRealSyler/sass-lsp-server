@@ -1,6 +1,6 @@
-import { SassNode, SassNodes, NodeValue } from './nodes';
+import { SassNode, SassNodes, ValueNode } from './nodes';
 import { SassFile } from './abstractSyntaxTree';
-import { FileSettings } from '../server';
+import { FileSettings } from '../defaultSettingsAndInterfaces';
 
 interface StringifyState {
   currentLine: number;
@@ -142,7 +142,7 @@ export function AstStringify(file: SassFile, _settings?: Partial<FileSettings>) 
   }
 }
 
-function stringifySelector(nodes: NodeValue[]) {
+function stringifySelector(nodes: ValueNode[]) {
   let text = '';
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
@@ -155,7 +155,7 @@ function stringifySelector(nodes: NodeValue[]) {
   return text;
 }
 
-export function stringifyValues(nodes: NodeValue[], removeFirstSpace = false) {
+export function stringifyValues(nodes: ValueNode[], removeFirstSpace = false) {
   let text = '';
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
@@ -164,7 +164,7 @@ export function stringifyValues(nodes: NodeValue[], removeFirstSpace = false) {
   return removeFirstSpace ? text.replace(/^ /, '') : text;
 }
 
-function stringifyValue(node: NodeValue) {
+function stringifyValue(node: ValueNode) {
   if (node.type === 'expression') {
     return stringifyExpression(node);
   } else {

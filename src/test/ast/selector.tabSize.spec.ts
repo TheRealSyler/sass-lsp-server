@@ -4,15 +4,15 @@ import { createDocumentItem } from '../utils';
 
 test('AST: Selector tabSize', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(createDocumentItem('.class\n  .class\n .class', '/file1'), {
+  await ast.parse(createDocumentItem('.class\n  .class\n .class', '/file1'), {
     insertSpaces: true,
     tabSize: 1,
   });
-  await ast.parseFile(createDocumentItem('.class\n  .class\n .class', '/file2'), {
+  await ast.parse(createDocumentItem('.class\n  .class\n .class', '/file2'), {
     insertSpaces: true,
     tabSize: 2,
   });
-  await ast.parseFile(createDocumentItem('.class\n  .class\n .class', '/file12'), {
+  await ast.parse(createDocumentItem('.class\n  .class\n .class', '/file12'), {
     insertSpaces: true,
     tabSize: 12,
   });
@@ -26,20 +26,20 @@ test('AST: Selector tabSize', async () => {
           line: 0,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               line: 1,
               level: 1,
               body: [],
-              value: [{ type: 'literal', value: '.class' }],
+              value: [{ type: 'literalValue', value: '.class' }],
               type: 'selector',
             },
             {
               line: 2,
               level: 1,
               body: [],
-              value: [{ type: 'literal', value: '.class' }],
+              value: [{ type: 'literalValue', value: '.class' }],
               type: 'selector',
             },
           ],
@@ -54,13 +54,13 @@ test('AST: Selector tabSize', async () => {
           line: 0,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               line: 1,
               level: 1,
               type: 'selector',
-              value: [{ type: 'literal', value: '.class' }],
+              value: [{ type: 'literalValue', value: '.class' }],
               body: [],
             },
           ],
@@ -69,7 +69,7 @@ test('AST: Selector tabSize', async () => {
           line: 2,
           level: 1,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [],
         },
       ],
@@ -83,20 +83,20 @@ test('AST: Selector tabSize', async () => {
           level: 0,
           type: 'selector',
           body: [],
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
         },
         {
           line: 1,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [],
         },
         {
           line: 2,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [],
         },
       ],

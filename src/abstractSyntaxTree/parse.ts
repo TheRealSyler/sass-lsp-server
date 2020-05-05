@@ -67,8 +67,24 @@ interface ASTParserCurrentContext {
   isLastBlockCommentLine: boolean;
 }
 
+type ParsePartialDocument = {
+  startLine: number;
+  endLine: number;
+  text: string;
+  uri: string;
+  /**Nodes before the startLine. */
+  nodes: SassNode[];
+};
+
+type ParseFullDocument = {
+  text: string;
+  uri: string;
+};
+
+export type ParseDocument = ParseFullDocument | ParsePartialDocument;
+// TODO Implement ability to parse a range, (using ParsePartialDocument)
 export async function AstParse(
-  document: TextDocumentItem,
+  document: ParseDocument,
   ast: AbstractSyntaxTree,
   _settings?: Partial<FileSettings>
 ): Promise<SassFile> {

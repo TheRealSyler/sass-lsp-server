@@ -1,15 +1,14 @@
 import { StingKeyObj } from '../utils';
-import { AstParse } from './parse';
-import { promises } from 'fs';
+import { AstParse, ParseDocument } from './parse';
+import { promises, existsSync } from 'fs';
 import { AstStringify } from './stringify';
-import { TextDocumentItem } from 'vscode-languageserver';
-import { extname } from 'path';
-import { SassNode } from './nodes';
+import { SassNode, LineNode } from './nodes';
 import { SassDiagnostic } from './diagnostics';
-import { FileSettings } from '../server';
+import { FileSettings } from '../defaultSettingsAndInterfaces';
+import { findNode } from './utils';
 
 export interface SassFile {
-  body: SassNode[];
+  body: LineNode[];
   diagnostics: SassDiagnostic[];
   settings: FileSettings;
 }
@@ -17,8 +16,7 @@ export interface SassFile {
 export class AbstractSyntaxTree {
   files: StingKeyObj<SassFile> = {};
 
-  // TODO add parse line method
-  async parseFile(document: TextDocumentItem, options?: Partial<FileSettings>) {
+  async parse(document: ParseDocument, options?: Partial<FileSettings>) {
     this.files[document.uri] = await AstParse(document, this, options);
   }
 
@@ -32,13 +30,15 @@ export class AbstractSyntaxTree {
 
   // TODO add stringify range method
   async stringifyFile(uri: string, options?: Partial<FileSettings>) {
-    await this.lookUpFile(uri, options);
-    return AstStringify(this.files[uri], options).replace(/\n$/, '');
+    if (await this.lookUpFile(uri, options)) {
+      return AstStringify(this.files[uri], options).replace(/\n$/, '');
+    }
+    return '';
   }
 
   findVariable(uri: string, name: string) {
     const file = this.files[uri];
-    if (file && file.body) {
+    if (file) {
       for (let i = 0; i < file.body.length; i++) {
         const node = file.body[i];
         if (node.type === 'variable' && node.value === name) {
@@ -49,19 +49,18 @@ export class AbstractSyntaxTree {
     return null;
   }
 
-  async lookUpFile(uri: string, options?: Partial<FileSettings>) {
+  /**checks if the file exists and if the file is in this.files, if the file is not in file the file will be parsed. */
+  async lookUpFile(uri: string, settings?: Partial<FileSettings>) {
     // TODO add check and test for circular dependencies
     if (this.files[uri]) {
       return true;
     }
+    if (existsSync(uri)) {
+      const text = (await promises.readFile(uri)).toString();
 
-    const text = (await promises.readFile(uri)).toString();
-
-    this.files[uri] = await AstParse(
-      { languageId: extname(uri), text, uri, version: 0 },
-      this,
-      options
-    );
-    return true;
+      this.files[uri] = await AstParse({ text, uri }, this, settings);
+      return true;
+    }
+    return false;
   }
 }

@@ -4,19 +4,19 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Property Values', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem('.class\n  margin: 2rem auto', '/file'),
     defaultTestFileSettings
   );
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem('$var: 20px\n.class\n  margin: $var', '/file/variable'),
     defaultTestFileSettings
   );
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem('.class\n  margin: calc(calc(20px - $var2) + $var)', '/file/function'),
     defaultTestFileSettings
   );
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem('.class\n  margin: #{calc(100vh - #{$var})}', '/file/interpolation'),
     defaultTestFileSettings
   );
@@ -30,16 +30,16 @@ test('AST: Property Values', async () => {
           line: 0,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               line: 1,
               level: 1,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               type: 'property',
               body: [
-                { type: 'literal', value: '2rem' },
-                { type: 'literal', value: 'auto' },
+                { type: 'literalValue', value: '2rem' },
+                { type: 'literalValue', value: 'auto' },
               ],
             },
           ],
@@ -52,7 +52,7 @@ test('AST: Property Values', async () => {
       body: [
         {
           type: 'variable',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
           level: 0,
           line: 0,
           value: '$var',
@@ -61,12 +61,12 @@ test('AST: Property Values', async () => {
           line: 1,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               line: 2,
               level: 1,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               type: 'property',
               body: [
                 {
@@ -95,12 +95,12 @@ test('AST: Property Values', async () => {
           line: 0,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               line: 1,
               level: 1,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               type: 'property',
               body: [
                 {
@@ -113,12 +113,12 @@ test('AST: Property Values', async () => {
                       expressionType: 'func',
                       funcName: 'calc',
                       body: [
-                        { type: 'literal', value: '20px' },
-                        { type: 'literal', value: '-' },
+                        { type: 'literalValue', value: '20px' },
+                        { type: 'literalValue', value: '-' },
                         { type: 'variableRef', value: '$var2', ref: null },
                       ],
                     },
-                    { type: 'literal', value: '+' },
+                    { type: 'literalValue', value: '+' },
                     { type: 'variableRef', value: '$var', ref: null },
                   ],
                 },
@@ -136,12 +136,12 @@ test('AST: Property Values', async () => {
           line: 0,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               line: 1,
               level: 1,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               type: 'property',
               body: [
                 {
@@ -152,8 +152,8 @@ test('AST: Property Values', async () => {
                       expressionType: 'func',
                       type: 'expression',
                       body: [
-                        { type: 'literal', value: '100vh' },
-                        { type: 'literal', value: '-' },
+                        { type: 'literalValue', value: '100vh' },
+                        { type: 'literalValue', value: '-' },
                         {
                           type: 'expression',
                           expressionType: 'interpolated',

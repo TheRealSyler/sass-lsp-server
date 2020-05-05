@@ -3,7 +3,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../../utils';
 
 test('Sass Format: Indentation & Whitespace', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `
 @import ../files/import1.sass
@@ -91,7 +91,7 @@ $test: 23
 
 test('Sass Format: Simple Indentation', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `
   

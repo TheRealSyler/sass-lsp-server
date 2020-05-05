@@ -3,7 +3,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../../utils';
 
 test('Sass Format: Block Comment', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `/**
 * @comment  
@@ -28,13 +28,13 @@ test('Sass Format: Block Comment', async () => {
           level: 0,
           line: 0,
           body: [
-            { line: 0, value: '/**' },
-            { line: 1, value: ' * @comment' },
-            { line: 2, value: ' * test Comment text.' },
-            { line: 3, value: ' *' },
-            { line: 4, value: '' },
-            { line: 5, value: ' *' },
-            { line: 6, value: ' */' },
+            { line: 0, value: '/**', type: 'blockCommentContent' },
+            { line: 1, value: ' * @comment', type: 'blockCommentContent' },
+            { line: 2, value: ' * test Comment text.', type: 'blockCommentContent' },
+            { line: 3, value: ' *', type: 'blockCommentContent' },
+            { line: 4, value: '', type: 'blockCommentContent' },
+            { line: 5, value: ' *', type: 'blockCommentContent' },
+            { line: 6, value: ' */', type: 'blockCommentContent' },
           ],
         },
         { type: 'emptyLine', line: 7 },

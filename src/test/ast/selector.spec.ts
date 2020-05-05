@@ -4,7 +4,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('Complex Selector', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `#{$body}.class::hover,  
 .class#id::not(.a)    a[type="button"]   , // asd
@@ -29,7 +29,7 @@ test('Complex Selector', async () => {
               expressionType: 'interpolated',
               body: [{ type: 'variableRef', ref: null, value: '$body' }],
             },
-            { type: 'literal', value: '.class::hover,' },
+            { type: 'literalValue', value: '.class::hover,' },
           ],
           body: [],
         },
@@ -42,11 +42,11 @@ test('Complex Selector', async () => {
               type: 'expression',
               expressionType: 'func',
               funcName: '.class#id::not',
-              body: [{ type: 'literal', value: '.a' }],
+              body: [{ type: 'literalValue', value: '.a' }],
             },
-            { type: 'literal', value: ' a[type="button"]' },
-            { type: 'literal', value: ' ,' },
-            { type: 'literal', value: ' // asd' },
+            { type: 'literalValue', value: ' a[type="button"]' },
+            { type: 'literalValue', value: ' ,' },
+            { type: 'literalValue', value: ' // asd' },
           ],
           body: [],
         },
@@ -55,8 +55,8 @@ test('Complex Selector', async () => {
           level: 0,
           line: 2,
           value: [
-            { type: 'literal', value: '.class' },
-            { type: 'literal', value: ' .class#id' },
+            { type: 'literalValue', value: '.class' },
+            { type: 'literalValue', value: ' .class#id' },
           ],
           body: [],
         },

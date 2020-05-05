@@ -3,7 +3,7 @@ import { defaultTestFileSettings, createDocumentItem } from '../utils';
 
 test('AST: Simple Import', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       '@import "./files/import1"\n.class\n  margin: $var',
       `${__dirname}/file.sass`
@@ -21,7 +21,7 @@ test('AST: Simple Import', async () => {
           level: 0,
           line: 0,
           value: '$var',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -40,12 +40,12 @@ test('AST: Simple Import', async () => {
           line: 1,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               line: 2,
               level: 1,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               type: 'property',
               body: [
                 {

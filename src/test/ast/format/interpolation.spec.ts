@@ -4,7 +4,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../../utils';
 
 test('Sass Format: Selector Interpolation', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `#{$body}
     color: red
@@ -42,8 +42,8 @@ test('Sass Format: Selector Interpolation', async () => {
               type: 'property',
               level: 1,
               line: 1,
-              value: [{ type: 'literal', value: 'color' }],
-              body: [{ type: 'literal', value: 'red' }],
+              value: [{ type: 'literalValue', value: 'color' }],
+              body: [{ type: 'literalValue', value: 'red' }],
             },
             { type: 'emptyLine', line: 2 },
           ],
@@ -64,8 +64,8 @@ test('Sass Format: Selector Interpolation', async () => {
               type: 'property',
               level: 1,
               line: 4,
-              value: [{ type: 'literal', value: 'color' }],
-              body: [{ type: 'literal', value: 'red' }],
+              value: [{ type: 'literalValue', value: 'color' }],
+              body: [{ type: 'literalValue', value: 'red' }],
             },
             {
               type: 'property',
@@ -78,7 +78,7 @@ test('Sass Format: Selector Interpolation', async () => {
                   body: [{ type: 'variableRef', ref: null, value: '$var' }],
                 },
               ],
-              body: [{ type: 'literal', value: '1rem' }],
+              body: [{ type: 'literalValue', value: '1rem' }],
             },
           ],
         },

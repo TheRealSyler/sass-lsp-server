@@ -4,7 +4,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Property functions', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `
 .class
@@ -29,23 +29,23 @@ test('AST: Property functions', async () => {
           type: 'selector',
           level: 0,
           line: 1,
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               type: 'property',
               level: 1,
               line: 2,
-              value: [{ type: 'literal', value: 'border' }],
+              value: [{ type: 'literalValue', value: 'border' }],
               body: [
-                { type: 'literal', value: 'solid' },
+                { type: 'literalValue', value: 'solid' },
                 {
                   type: 'expression',
                   expressionType: 'func',
                   funcName: 'calc',
                   body: [
-                    { type: 'literal', value: '1rem' },
-                    { type: 'literal', value: '-' },
-                    { type: 'literal', value: '20px' },
+                    { type: 'literalValue', value: '1rem' },
+                    { type: 'literalValue', value: '-' },
+                    { type: 'literalValue', value: '20px' },
                   ],
                 },
                 {
@@ -53,8 +53,8 @@ test('AST: Property functions', async () => {
                   expressionType: 'func',
                   funcName: 'darken',
                   body: [
-                    { type: 'literal', value: '#fff,' },
-                    { type: 'literal', value: '0.4' },
+                    { type: 'literalValue', value: '#fff,' },
+                    { type: 'literalValue', value: '0.4' },
                   ],
                 },
               ],
@@ -63,7 +63,7 @@ test('AST: Property functions', async () => {
               type: 'property',
               level: 1,
               line: 3,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               body: [
                 {
                   type: 'expression',

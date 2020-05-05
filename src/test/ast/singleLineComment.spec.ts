@@ -3,7 +3,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('Single line Comment', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `.class  // class comment
     // Line comment
@@ -23,8 +23,8 @@ test('Single line Comment', async () => {
           level: 0,
           line: 0,
           value: [
-            { type: 'literal', value: '.class' },
-            { type: 'literal', value: ' // class comment' },
+            { type: 'literalValue', value: '.class' },
+            { type: 'literalValue', value: ' // class comment' },
           ],
           body: [
             {
@@ -37,10 +37,10 @@ test('Single line Comment', async () => {
               type: 'property',
               level: 1,
               line: 2,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               body: [
-                { type: 'literal', value: '20px' },
-                { type: 'literal', value: ' // prop comment $var' },
+                { type: 'literalValue', value: '20px' },
+                { type: 'literalValue', value: ' // prop comment $var' },
               ],
             },
           ],

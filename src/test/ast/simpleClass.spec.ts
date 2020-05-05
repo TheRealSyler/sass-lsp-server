@@ -3,7 +3,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Simple Class', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem('.class\n  margin: 20px\n  &:hover\n    color: red', '/file'),
     defaultTestFileSettings
   );
@@ -17,14 +17,14 @@ test('AST: Simple Class', async () => {
           line: 0,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               line: 1,
               level: 1,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               type: 'property',
-              body: [{ type: 'literal', value: '20px' }],
+              body: [{ type: 'literalValue', value: '20px' }],
             },
             {
               line: 2,
@@ -34,11 +34,11 @@ test('AST: Simple Class', async () => {
                   level: 2,
                   line: 3,
                   type: 'property',
-                  value: [{ type: 'literal', value: 'color' }],
-                  body: [{ type: 'literal', value: 'red' }],
+                  value: [{ type: 'literalValue', value: 'color' }],
+                  body: [{ type: 'literalValue', value: 'red' }],
                 },
               ],
-              value: [{ type: 'literal', value: '&:hover' }],
+              value: [{ type: 'literalValue', value: '&:hover' }],
               type: 'selector',
             },
           ],

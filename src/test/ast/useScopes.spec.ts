@@ -4,7 +4,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Use Scopes', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `@use "./files/import1"
     @use "./files/import2" as *
@@ -26,7 +26,7 @@ test('AST: Use Scopes', async () => {
           level: 0,
           line: 0,
           value: '$var',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -39,7 +39,7 @@ test('AST: Use Scopes', async () => {
           level: 0,
           line: 0,
           value: '$var2',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -71,7 +71,7 @@ test('AST: Use Scopes', async () => {
           line: 2,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               type: 'comment',
@@ -83,7 +83,7 @@ test('AST: Use Scopes', async () => {
               type: 'property',
               level: 1,
               line: 4,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               body: [
                 { type: 'variableRef', ref: null, value: '$var' },
                 {

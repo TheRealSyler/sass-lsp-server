@@ -4,7 +4,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Mixin', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `=mx1
   margin: 20px
@@ -36,8 +36,8 @@ test('AST: Mixin', async () => {
               type: 'property',
               level: 1,
               line: 1,
-              value: [{ type: 'literal', value: 'margin' }],
-              body: [{ type: 'literal', value: '20px' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
+              body: [{ type: 'literalValue', value: '20px' }],
             },
           ],
         },
@@ -53,7 +53,7 @@ test('AST: Mixin', async () => {
               type: 'property',
               level: 1,
               line: 3,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               body: [{ type: 'variableRef', value: '$arg1', ref: { uri: '/file', line: 2 } }],
             },
           ],
@@ -64,7 +64,7 @@ test('AST: Mixin', async () => {
           line: 4,
           mixinType: '@mixin',
           value: 'mx3',
-          args: [{ body: [{ type: 'literal', value: '"$nonExistentVar"' }], value: '$arg1' }],
+          args: [{ body: [{ type: 'literalValue', value: '"$nonExistentVar"' }], value: '$arg1' }],
           body: [],
         },
         {

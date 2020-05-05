@@ -4,7 +4,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Import Scopes', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `@import "./files/import1"
 @import "./files/import2"
@@ -31,7 +31,7 @@ test('AST: Import Scopes', async () => {
           level: 0,
           line: 0,
           value: '$var',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -44,7 +44,7 @@ test('AST: Import Scopes', async () => {
           level: 0,
           line: 0,
           value: '$var2',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -57,7 +57,7 @@ test('AST: Import Scopes', async () => {
           level: 0,
           line: 0,
           value: '$var3',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -70,7 +70,7 @@ test('AST: Import Scopes', async () => {
           level: 0,
           line: 0,
           value: '$var4',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -83,7 +83,7 @@ test('AST: Import Scopes', async () => {
           level: 0,
           line: 0,
           value: '$var5',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -112,7 +112,7 @@ test('AST: Import Scopes', async () => {
           line: 2,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               type: 'import',
@@ -124,7 +124,7 @@ test('AST: Import Scopes', async () => {
             {
               line: 4,
               level: 1,
-              value: [{ type: 'literal', value: '&:hover' }],
+              value: [{ type: 'literalValue', value: '&:hover' }],
               type: 'selector',
               body: [
                 {
@@ -142,7 +142,7 @@ test('AST: Import Scopes', async () => {
           type: 'selector',
           level: 0,
           line: 6,
-          value: [{ type: 'literal', value: '.class2' }],
+          value: [{ type: 'literalValue', value: '.class2' }],
           body: [
             {
               type: 'import',
@@ -155,7 +155,7 @@ test('AST: Import Scopes', async () => {
               type: 'property',
               level: 1,
               line: 8,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               body: [
                 {
                   type: 'variableRef',
@@ -175,7 +175,7 @@ test('AST: Import Scopes', async () => {
               type: 'property',
               level: 1,
               line: 9,
-              value: [{ type: 'literal', value: 'padding' }],
+              value: [{ type: 'literalValue', value: 'padding' }],
               body: [
                 {
                   type: 'variableRef',

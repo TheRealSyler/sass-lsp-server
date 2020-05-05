@@ -1,5 +1,5 @@
 import { TextDocumentItem } from 'vscode-languageserver';
-import { FileSettings } from '../server';
+import { FileSettings } from '../defaultSettingsAndInterfaces';
 
 export const defaultTestFileSettings: FileSettings = {
   insertSpaces: true,

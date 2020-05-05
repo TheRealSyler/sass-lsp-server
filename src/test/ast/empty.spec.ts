@@ -3,7 +3,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: EmptyLine and empty property', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `
 .class
@@ -27,14 +27,14 @@ test('AST: EmptyLine and empty property', async () => {
           type: 'selector',
           level: 0,
           line: 1,
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             { type: 'emptyLine', line: 2 },
             {
               type: 'property',
               level: 1,
               line: 3,
-              value: [{ type: 'literal', value: 'margin-top' }],
+              value: [{ type: 'literalValue', value: 'margin-top' }],
               body: [],
             },
             { type: 'emptyLine', line: 4 },
@@ -62,14 +62,14 @@ test('AST: EmptyLine and empty property', async () => {
           type: 'selector',
           level: 0,
           line: 1,
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             { type: 'emptyLine', line: 2 },
             {
               type: 'property',
               level: 1,
               line: 3,
-              value: [{ type: 'literal', value: 'margin-top' }],
+              value: [{ type: 'literalValue', value: 'margin-top' }],
               body: [],
             },
             { type: 'emptyLine', line: 4 },

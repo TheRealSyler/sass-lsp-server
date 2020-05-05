@@ -3,7 +3,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Format', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `@use "./files/import2"
 @use ./files/import4 as test
@@ -30,7 +30,7 @@ margin-top:  calc( #{ $var } - 20px)
           level: 0,
           line: 0,
           value: '$var2',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -43,7 +43,7 @@ margin-top:  calc( #{ $var } - 20px)
           level: 0,
           line: 0,
           value: '$var3',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -56,7 +56,7 @@ margin-top:  calc( #{ $var } - 20px)
           level: 0,
           line: 0,
           value: '$var4',
-          body: [{ type: 'literal', value: '20px' }],
+          body: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -89,9 +89,9 @@ margin-top:  calc( #{ $var } - 20px)
               expressionType: 'func',
               funcName: 'calc',
               body: [
-                { type: 'literal', value: '100vh' },
-                { type: 'literal', value: '-' },
-                { type: 'literal', value: '20px' },
+                { type: 'literalValue', value: '100vh' },
+                { type: 'literalValue', value: '-' },
+                { type: 'literalValue', value: '20px' },
               ],
             },
           ],
@@ -100,7 +100,7 @@ margin-top:  calc( #{ $var } - 20px)
           type: 'selector',
           level: 0,
           line: 3,
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               type: 'import',
@@ -113,7 +113,7 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 5,
-              value: [{ type: 'literal', value: 'margin-top' }],
+              value: [{ type: 'literalValue', value: 'margin-top' }],
               body: [
                 {
                   type: 'expression',
@@ -129,8 +129,8 @@ margin-top:  calc( #{ $var } - 20px)
                         },
                       ],
                     },
-                    { type: 'literal', value: '-' },
-                    { type: 'literal', value: '20px' },
+                    { type: 'literalValue', value: '-' },
+                    { type: 'literalValue', value: '20px' },
                   ],
                   expressionType: 'func',
                   funcName: 'calc',
@@ -141,7 +141,7 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 6,
-              value: [{ type: 'literal', value: 'margin-left' }],
+              value: [{ type: 'literalValue', value: 'margin-left' }],
               body: [
                 {
                   type: 'variableRef',
@@ -154,7 +154,7 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 7,
-              value: [{ type: 'literal', value: 'margin-right' }],
+              value: [{ type: 'literalValue', value: 'margin-right' }],
               body: [
                 {
                   type: 'variableRef',
@@ -167,7 +167,7 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 8,
-              value: [{ type: 'literal', value: 'margin-bottom' }],
+              value: [{ type: 'literalValue', value: 'margin-bottom' }],
               body: [
                 {
                   type: 'variableRef',

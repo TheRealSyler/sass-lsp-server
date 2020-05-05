@@ -3,7 +3,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../../utils';
 
 test('Sass Format: Insert tabs', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `
   

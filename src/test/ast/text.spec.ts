@@ -3,7 +3,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: text', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `.class
   margin`,
@@ -21,7 +21,7 @@ test('AST: text', async () => {
           type: 'selector',
           level: 0,
           line: 0,
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [{ type: 'literal', value: '  margin', line: 1 }],
         },
       ],

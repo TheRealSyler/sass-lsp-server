@@ -4,7 +4,7 @@ import { createDocumentItem, defaultTestFileSettings } from '../utils';
 
 test('AST: Variable Scopes', async () => {
   const ast = new AbstractSyntaxTree();
-  await ast.parseFile(
+  await ast.parse(
     createDocumentItem(
       `$var: 1px
 $notUsedVar: none
@@ -34,33 +34,33 @@ $notUsedVar: none
           level: 0,
           line: 0,
           value: '$var',
-          body: [{ type: 'literal', value: '1px' }],
+          body: [{ type: 'literalValue', value: '1px' }],
         },
         {
           type: 'variable',
           level: 0,
           line: 1,
           value: '$notUsedVar',
-          body: [{ type: 'literal', value: 'none' }],
+          body: [{ type: 'literalValue', value: 'none' }],
         },
         {
           line: 2,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literal', value: '.class' }],
+          value: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               type: 'variable',
               level: 1,
               line: 3,
               value: '$var2',
-              body: [{ type: 'literal', value: '2px' }],
+              body: [{ type: 'literalValue', value: '2px' }],
             },
 
             {
               line: 4,
               level: 1,
-              value: [{ type: 'literal', value: '&:hover' }],
+              value: [{ type: 'literalValue', value: '&:hover' }],
               type: 'selector',
               body: [
                 {
@@ -68,14 +68,14 @@ $notUsedVar: none
                   level: 2,
                   line: 5,
                   value: '$var3',
-                  body: [{ type: 'literal', value: '3px' }],
+                  body: [{ type: 'literalValue', value: '3px' }],
                 },
                 {
                   type: 'variable',
                   level: 2,
                   line: 6,
                   value: '$notUsedVar',
-                  body: [{ type: 'literal', value: 'none' }],
+                  body: [{ type: 'literalValue', value: 'none' }],
                 },
               ],
             },
@@ -85,20 +85,20 @@ $notUsedVar: none
           type: 'selector',
           level: 0,
           line: 7,
-          value: [{ type: 'literal', value: '.class2' }],
+          value: [{ type: 'literalValue', value: '.class2' }],
           body: [
             {
               type: 'variable',
               level: 1,
               line: 8,
               value: '$var4',
-              body: [{ type: 'literal', value: '4px' }],
+              body: [{ type: 'literalValue', value: '4px' }],
             },
             {
               type: 'property',
               level: 1,
               line: 9,
-              value: [{ type: 'literal', value: 'margin' }],
+              value: [{ type: 'literalValue', value: 'margin' }],
               body: [
                 { type: 'variableRef', ref: { line: 0, uri: '/file' }, value: '$var' },
                 { type: 'variableRef', ref: null, value: '$var2' },
