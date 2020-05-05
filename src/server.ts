@@ -53,13 +53,10 @@ export class SassLspServer {
     connection.listen();
   }
 
-  private onInitialize = (params: InitializeParams): InitializeResult => {
-    let capabilities = params.capabilities;
+  private onInitialize = ({ capabilities }: InitializeParams): InitializeResult => {
 
-    // Does the client support the `workspace/configuration` request?
-    // If not, we will fall back using global settings
     this.hasConfigurationCapability = this.getHasConfigurationCapability(capabilities);
-    this.hasWorkspaceFolderCapability = this.getHasWorkspaceFolderCapability(capabilities);
+
     this.hasDiagnosticRelatedInformationCapability = this.getHasDiagnosticRelatedInformationCapability(
       capabilities
     );
@@ -72,39 +69,21 @@ export class SassLspServer {
         },
       },
     };
-    if (this.hasWorkspaceFolderCapability) {
-      result.capabilities.workspace = {
-        workspaceFolders: {
-          supported: true,
-        },
-      };
-    }
     return result;
   };
 
   private onInitialized = () => {
     if (this.hasConfigurationCapability) {
-      // Register for all configuration changes.
       this.connection.client.register(DidChangeConfigurationNotification.type, undefined);
-    }
-    if (this.hasWorkspaceFolderCapability) {
-      this.connection.workspace.onDidChangeWorkspaceFolders((_event) => {
-        this.connection.console.log('Workspace folder change event received.');
-      });
     }
   };
 
   private onDidChangeConfiguration: NotificationHandler<DidChangeConfigurationParams> = (
     change
   ) => {
-    this.globalSettings = <LSPServerSettings>(
-      (change.settings.languageServerExample || defaultLSPServerSettings)
-    );
+    this.connection.console.log(JSON.stringify(change, null, 2));
+    this.globalSettings = <LSPServerSettings>(change.settings.sass || defaultLSPServerSettings);
   };
-
-  private getHasWorkspaceFolderCapability(capabilities: ClientCapabilities): boolean {
-    return !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
-  }
 
   private getHasConfigurationCapability(capabilities: ClientCapabilities): boolean {
     return !!(capabilities.workspace && !!capabilities.workspace.configuration);
@@ -119,7 +98,6 @@ export class SassLspServer {
   }
 
   private async getDocumentEditorSettings(uri: string): Promise<FileSettings> {
-    console.log('SERVER GET CON', uri);
     if (!this.hasConfigurationCapability) {
       return defaultFileSettings;
     }
