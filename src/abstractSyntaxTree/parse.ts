@@ -602,6 +602,11 @@ export async function AstParse(
     namespace: null | string,
     offset: number
   ): SassNodes['variableRef']['ref'] {
+    const mixinVar = findVariableInMixinArgs(name);
+    if (mixinVar) {
+      return mixinVar;
+    }
+
     const varNode: SassNodes['variable'] | null | undefined = scope.variables
       .flat()
       .find((v) => v.value === name);
@@ -609,10 +614,6 @@ export async function AstParse(
       return { uri: document.uri, line: varNode.line };
     }
 
-    const mixinVar = findVariableInMixinArgs(name);
-    if (mixinVar) {
-      return mixinVar;
-    }
     const importVar = findVariableInImports(name, namespace);
     if (importVar) {
       return importVar;
