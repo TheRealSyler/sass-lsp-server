@@ -41,7 +41,7 @@ export class AbstractSyntaxTree {
     if (file) {
       for (let i = 0; i < file.body.length; i++) {
         const node = file.body[i];
-        if (node.type === 'variable' && node.value === name) {
+        if (node.type === 'variable' && node.name === name) {
           return node;
         }
       }

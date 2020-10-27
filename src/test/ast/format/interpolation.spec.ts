@@ -30,7 +30,7 @@ test('Sass Format: Selector Interpolation', async () => {
           type: 'selector',
           level: 0,
           line: 0,
-          value: [
+          name: [
             {
               type: 'expression',
               expressionType: 'interpolated',
@@ -42,8 +42,8 @@ test('Sass Format: Selector Interpolation', async () => {
               type: 'property',
               level: 1,
               line: 1,
-              value: [{ type: 'literalValue', value: 'color' }],
-              body: [{ type: 'literalValue', value: 'red' }],
+              name: [{ type: 'literalValue', value: 'color' }],
+              value: [{ type: 'literalValue', value: 'red' }],
             },
             { type: 'emptyLine', line: 2 },
           ],
@@ -52,7 +52,7 @@ test('Sass Format: Selector Interpolation', async () => {
           type: 'selector',
           level: 0,
           line: 3,
-          value: [
+          name: [
             {
               type: 'expression',
               expressionType: 'interpolated',
@@ -64,21 +64,21 @@ test('Sass Format: Selector Interpolation', async () => {
               type: 'property',
               level: 1,
               line: 4,
-              value: [{ type: 'literalValue', value: 'color' }],
-              body: [{ type: 'literalValue', value: 'red' }],
+              name: [{ type: 'literalValue', value: 'color' }],
+              value: [{ type: 'literalValue', value: 'red' }],
             },
             {
               type: 'property',
               level: 1,
               line: 5,
-              value: [
+              name: [
                 {
                   type: 'expression',
                   expressionType: 'interpolated',
                   body: [{ type: 'variableRef', ref: null, value: '$var' }],
                 },
               ],
-              body: [{ type: 'literalValue', value: '1rem' }],
+              value: [{ type: 'literalValue', value: '1rem' }],
             },
           ],
         },

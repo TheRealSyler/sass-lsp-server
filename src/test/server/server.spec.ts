@@ -25,7 +25,7 @@ test('Server: Server', async () => {
   };
 
   controller.onDidOpenTextDocument({
-    textDocument: createDocumentItem('.class\n    margin: 20px', '/file'),
+    textDocument: createDocumentItem('.class\n    margin: 20px\n  padding: 20px', '/file'),
   });
 
   await sleep(100);
@@ -37,14 +37,21 @@ test('Server: Server', async () => {
           line: 0,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literalValue', value: '.class' }],
+          name: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               line: 1,
               level: 1,
-              value: [{ type: 'literalValue', value: 'margin' }],
+              name: [{ type: 'literalValue', value: 'margin' }],
               type: 'property',
-              body: [{ type: 'literalValue', value: '20px' }],
+              value: [{ type: 'literalValue', value: '20px' }],
+            },
+            {
+              line: 2,
+              level: 1,
+              name: [{ type: 'literalValue', value: 'padding' }],
+              type: 'property',
+              value: [{ type: 'literalValue', value: '20px' }],
             },
           ],
         },
@@ -72,7 +79,7 @@ test('Server: Server', async () => {
           line: 0,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literalValue', value: '.class' }],
+          name: [{ type: 'literalValue', value: '.class' }],
           body: [],
         },
       ],

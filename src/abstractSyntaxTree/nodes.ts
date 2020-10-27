@@ -1,15 +1,31 @@
 export interface BaseNode {
-  body: LineNode[] | ValueNode[] | null;
   line: number;
   level: number;
   type: keyof SassNodes;
-  value: string | ValueNode[];
 }
 
-export interface SelectorNode extends BaseNode {
+interface PropBaseNode extends BaseNode {
+  name: string | ValueNode[];
+}
+
+interface BaseSelectorNode extends PropBaseNode {
+  /**This property contains the child nodes of this node. */
   body: LineNode[];
-  value: ValueNode[];
+}
+
+export interface SelectorNode extends BaseSelectorNode {
+  name: ValueNode[];
   type: 'selector';
+}
+
+export interface FontFaceNode extends Omit<BaseSelectorNode, 'name'> {
+  type: 'fontFace';
+}
+
+export interface MixinNode extends BaseSelectorNode {
+  type: 'mixin';
+  mixinType: '@mixin' | '=';
+  args: { value: string; body: ValueNode[] | null }[];
 }
 
 export interface ImportNode extends Omit<BaseNode, 'body'> {
@@ -75,37 +91,26 @@ interface SassExpressionNodes {
 
 export type ExpressionNode = SassExpressionNodes[keyof SassExpressionNodes];
 
-export interface PropertyNode extends BaseNode {
-  body: ValueNode[];
+export interface PropertyNode extends PropBaseNode {
   value: ValueNode[];
+  name: ValueNode[];
   type: 'property';
 }
-export interface VariableNode extends BaseNode {
-  body: ValueNode[];
-  value: string;
+export interface VariableNode extends PropBaseNode {
+  value: ValueNode[];
+  name: string;
   type: 'variable';
 }
-export interface EmptyLineNode extends Pick<BaseNode, 'type' | 'line'> {
-  type: 'emptyLine';
-}
-export interface ExtendNode extends Pick<BaseNode, 'type' | 'line' | 'value' | 'level'> {
+
+export interface ExtendNode extends Pick<PropBaseNode, 'type' | 'line' | 'name' | 'level'> {
   type: 'extend';
 }
-export interface IncludeNode extends Pick<BaseNode, 'type' | 'line' | 'value' | 'level'> {
+export interface IncludeNode extends Pick<PropBaseNode, 'type' | 'line' | 'name' | 'level'> {
   type: 'include';
   includeType: '@include' | '+';
 }
-
-export interface FontFaceNode extends Omit<BaseNode, 'value'> {
-  type: 'fontFace';
-  body: LineNode[];
-}
-
-export interface MixinNode extends BaseNode {
-  body: LineNode[];
-  type: 'mixin';
-  mixinType: '@mixin' | '=';
-  args: { value: string; body: ValueNode[] | null }[];
+export interface EmptyLineNode extends Pick<BaseNode, 'type' | 'line'> {
+  type: 'emptyLine';
 }
 
 type _SassNode<T extends keyof SassNodes> = SassNodes[T];

@@ -22,21 +22,21 @@ test('AST: Simple Stringify', async () => {
           type: 'selector',
           line: 0,
           level: 0,
-          value: [{ type: 'literalValue', value: '.class' }],
+          name: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               type: 'property',
               level: 1,
               line: 1,
-              value: [{ type: 'literalValue', value: 'margin' }],
-              body: [{ type: 'literalValue', value: '20px' }],
+              name: [{ type: 'literalValue', value: 'margin' }],
+              value: [{ type: 'literalValue', value: '20px' }],
             },
             {
               type: 'property',
               level: 1,
               line: 2,
-              value: [{ type: 'literalValue', value: 'padding' }],
-              body: [
+              name: [{ type: 'literalValue', value: 'padding' }],
+              value: [
                 {
                   type: 'expression',
                   body: [

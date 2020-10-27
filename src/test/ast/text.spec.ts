@@ -21,7 +21,7 @@ test('AST: text', async () => {
           type: 'selector',
           level: 0,
           line: 0,
-          value: [{ type: 'literalValue', value: '.class' }],
+          name: [{ type: 'literalValue', value: '.class' }],
           body: [{ type: 'literal', value: '  margin', line: 1 }],
         },
       ],

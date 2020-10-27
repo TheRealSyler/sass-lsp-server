@@ -30,8 +30,8 @@ test('AST: Import Scopes', async () => {
           type: 'variable',
           level: 0,
           line: 0,
-          value: '$var',
-          body: [{ type: 'literalValue', value: '20px' }],
+          name: '$var',
+          value: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -43,8 +43,8 @@ test('AST: Import Scopes', async () => {
           type: 'variable',
           level: 0,
           line: 0,
-          value: '$var2',
-          body: [{ type: 'literalValue', value: '20px' }],
+          name: '$var2',
+          value: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -56,8 +56,8 @@ test('AST: Import Scopes', async () => {
           type: 'variable',
           level: 0,
           line: 0,
-          value: '$var3',
-          body: [{ type: 'literalValue', value: '20px' }],
+          name: '$var3',
+          value: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -69,8 +69,8 @@ test('AST: Import Scopes', async () => {
           type: 'variable',
           level: 0,
           line: 0,
-          value: '$var4',
-          body: [{ type: 'literalValue', value: '20px' }],
+          name: '$var4',
+          value: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -82,8 +82,8 @@ test('AST: Import Scopes', async () => {
           type: 'variable',
           level: 0,
           line: 0,
-          value: '$var5',
-          body: [{ type: 'literalValue', value: '20px' }],
+          name: '$var5',
+          value: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -112,7 +112,7 @@ test('AST: Import Scopes', async () => {
           line: 2,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literalValue', value: '.class' }],
+          name: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               type: 'import',
@@ -124,7 +124,7 @@ test('AST: Import Scopes', async () => {
             {
               line: 4,
               level: 1,
-              value: [{ type: 'literalValue', value: '&:hover' }],
+              name: [{ type: 'literalValue', value: '&:hover' }],
               type: 'selector',
               body: [
                 {
@@ -142,7 +142,7 @@ test('AST: Import Scopes', async () => {
           type: 'selector',
           level: 0,
           line: 6,
-          value: [{ type: 'literalValue', value: '.class2' }],
+          name: [{ type: 'literalValue', value: '.class2' }],
           body: [
             {
               type: 'import',
@@ -155,8 +155,8 @@ test('AST: Import Scopes', async () => {
               type: 'property',
               level: 1,
               line: 8,
-              value: [{ type: 'literalValue', value: 'margin' }],
-              body: [
+              name: [{ type: 'literalValue', value: 'margin' }],
+              value: [
                 {
                   type: 'variableRef',
                   ref: { line: 0, uri: `${__dirname}/files/import1.sass` },
@@ -175,8 +175,8 @@ test('AST: Import Scopes', async () => {
               type: 'property',
               level: 1,
               line: 9,
-              value: [{ type: 'literalValue', value: 'padding' }],
-              body: [
+              name: [{ type: 'literalValue', value: 'padding' }],
+              value: [
                 {
                   type: 'variableRef',
                   ref: { line: 0, uri: `${__dirname}/files/import5.sass` },

@@ -22,7 +22,7 @@ test('Single line Comment', async () => {
           type: 'selector',
           level: 0,
           line: 0,
-          value: [
+          name: [
             { type: 'literalValue', value: '.class' },
             { type: 'literalValue', value: ' // class comment' },
           ],
@@ -37,8 +37,8 @@ test('Single line Comment', async () => {
               type: 'property',
               level: 1,
               line: 2,
-              value: [{ type: 'literalValue', value: 'margin' }],
-              body: [
+              name: [{ type: 'literalValue', value: 'margin' }],
+              value: [
                 { type: 'literalValue', value: '20px' },
                 { type: 'literalValue', value: ' // prop comment $var' },
               ],

@@ -1,4 +1,5 @@
-import { SassNodes, LineNode, SassNode } from './nodes';
+import { SassNodes, LineNode, SassNode, BaseNode } from './nodes';
+import { ParseScope } from './parse';
 
 export function isUse(text: string) {
   return /^[\t ]*@use/.test(text);
@@ -46,6 +47,56 @@ function findNodeInBody(_node: SassNode, line: number): SassNode | null {
     }
   }
   return null;
+}
+// TODO Finish slice nodes function.
+export function sliceNodes(
+  _nodes: LineNode[],
+  line: number
+): { scope: ParseScope; nodes: LineNode[] } {
+  const nodes: LineNode[] = [];
+  // TODO fill scope.
+  const scope: ParseScope = {
+    selectors: [],
+    variables: [],
+    imports: [],
+  };
+
+  for (let i = 0; i < _nodes.length; i++) {
+    const node = _nodes[i];
+    const nextNode = _nodes[i + 1];
+
+    if (nextNode?.line < line) {
+      sliceBodyNode(node, line);
+      nodes.push(node);
+      break;
+    }
+    if (_nodes.length - 1 === i && 'body' in node) {
+      sliceBodyNode(node, line);
+    }
+    nodes.push(node);
+  }
+
+  return {
+    nodes,
+    scope,
+  };
+}
+function sliceBodyNode(node: SassNode, line: number) {
+  if ('body' in node) {
+    const body = [];
+    for (let j = 0; j < node.body.length; j++) {
+      const childNode = node.body[j];
+      if ('line' in childNode) {
+        if (childNode.line > line) {
+          break;
+        } else if ('body' in childNode) {
+          sliceBodyNode(childNode, line);
+        }
+        body.push(childNode as any);
+      }
+    }
+    node.body = body;
+  }
 }
 
 // export function execGlobalRegex(regex: RegExp, text: string, func: (m: RegExpExecArray) => void) {

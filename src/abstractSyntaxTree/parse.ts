@@ -1,5 +1,5 @@
-import { createSassNode, isUse, isImport } from './utils';
-import { SassNode, SassNodes, NodeValue } from './nodes';
+import { createSassNode, isUse, isImport, sliceNodes } from './utils';
+import { SassNodes, LineNode, ValueNode } from './nodes';
 import {
   getDistance,
   isProperty,
@@ -20,12 +20,11 @@ import { resolve } from 'path';
 import { addDotSassToPath } from '../utils';
 import { AbstractSyntaxTree, SassFile } from './abstractSyntaxTree';
 import { SassDiagnostic, createSassDiagnostic, createRange } from './diagnostics';
-import { TextDocumentItem } from 'vscode-languageserver';
-import { FileSettings, defaultFileSettings } from '../server';
+import { FileSettings, defaultFileSettings } from '../defaultSettingsAndInterfaces';
 
 const importAtPathRegex = /^[\t ]*(@import|@use)[\t ]*['"]?(.*?)['"]?[\t ]*([\t ]+as.*)?$/;
 
-interface ASTScope {
+export interface ParseScope {
   /**Stores references to the nodes in the current scope.
    *
    * ```sass
@@ -67,21 +66,21 @@ interface ASTParserCurrentContext {
   isLastBlockCommentLine: boolean;
 }
 
-type ParsePartialDocument = {
+type PartialDocument = {
   startLine: number;
   endLine: number;
   text: string;
   uri: string;
   /**Nodes before the startLine. */
-  nodes: SassNode[];
+  nodes: LineNode[];
 };
 
-type ParseFullDocument = {
+type FullDocument = {
   text: string;
   uri: string;
 };
 
-export type ParseDocument = ParseFullDocument | ParsePartialDocument;
+export type ParseDocument = FullDocument | PartialDocument;
 // TODO Implement ability to parse a range, (using ParsePartialDocument)
 export async function AstParse(
   document: ParseDocument,
@@ -89,61 +88,42 @@ export async function AstParse(
   _settings?: Partial<FileSettings>
 ): Promise<SassFile> {
   const settings = { ...defaultFileSettings, ...(_settings || {}) };
-  /**Stores all nodes. */
-  const nodes: SassNode[] = [];
+  const { scope, diagnostics, nodes, context, lines, isPartial } = declareParseVariables(document);
 
-  const diagnostics: SassDiagnostic[] = [];
-
-  const scope: ASTScope = {
-    selectors: [],
-    variables: [],
-    imports: [],
-  };
-  /**Stores information about the current line. */
-  const current: ASTParserCurrentContext = {
-    index: -1,
-    distance: 0,
-    line: '',
-    type: 'emptyLine',
-    level: 0,
-    blockCommentNode: null,
-    isLastBlockCommentLine: false,
-  };
-
-  const lines = document.text.split('\n');
   let canPushAtUseOrAtForwardNode = true;
-  for (let index = 0; index < lines.length; index++) {
-    current.index = index;
-    current.line = lines[index];
-    current.type = getLineType(current.line);
-    current.distance = getDistance(current.line, settings.tabSize);
-    current.level = Math.round(current.distance / settings.tabSize);
+  // console.log(JSON.stringify(declareParseVariables(document), null, 2));
+  for (context.index; context.index < lines.length; context.index++) {
+    context.line = lines[context.index];
+    context.type = getLineType(context.line);
+    context.distance = getDistance(context.line, settings.tabSize);
+    context.level = Math.round(context.distance / settings.tabSize);
 
-    if (current.type !== 'use') {
+    if (context.type !== 'use') {
       canPushAtUseOrAtForwardNode = false;
     }
-    switch (current.type) {
+    switch (context.type) {
       case 'blockComment':
         {
-          let value = current.line.replace(/^[\t ]*/, ' ').trimEnd();
-          if (!current.blockCommentNode) {
-            current.blockCommentNode = createSassNode<'blockComment'>({
+          let value = context.line.replace(/^[\t ]*/, ' ').trimEnd();
+          if (!context.blockCommentNode) {
+            context.blockCommentNode = createSassNode<'blockComment'>({
               body: [],
-              level: current.level,
-              line: current.index,
+              level: context.level,
+              line: context.index,
               type: 'blockComment',
             });
-            pushNode(current.blockCommentNode);
+            pushNode(context.blockCommentNode);
             value = value.trimLeft();
           }
 
-          current.blockCommentNode.body.push({
-            line: current.index,
+          context.blockCommentNode.body.push({
+            line: context.index,
             value,
+            type: 'blockCommentContent',
           });
-          if (current.isLastBlockCommentLine) {
-            current.blockCommentNode = null;
-            current.isLastBlockCommentLine = false;
+          if (context.isLastBlockCommentLine) {
+            context.blockCommentNode = null;
+            context.isLastBlockCommentLine = false;
           }
         }
         break;
@@ -152,9 +132,9 @@ export async function AstParse(
           const node = createSassNode<'selector'>({
             body: [],
             level: getMinLevel(),
-            line: index,
-            type: current.type,
-            value: parseExpression(current.line.trimStart(), current.distance, true),
+            line: context.index,
+            type: context.type,
+            name: parseExpression(context.line.trimStart(), context.distance, true),
           });
 
           pushNode(node);
@@ -166,13 +146,13 @@ export async function AstParse(
         break;
       case 'mixin':
         {
-          const { args, value, mixinType } = parseMixin(current.line);
+          const { args, value, mixinType } = parseMixin(context.line);
           const node = createSassNode<'mixin'>({
             body: [],
             level: getMinLevel(),
-            line: index,
-            type: current.type,
-            value,
+            line: context.index,
+            type: context.type,
+            name: value,
             args,
             mixinType,
           });
@@ -187,14 +167,14 @@ export async function AstParse(
 
       case 'property':
         {
-          const { value, body } = parseProperty(current.line, false);
+          const { value, body } = parseProperty(context.line, false);
           scope.selectors[scope.selectors.length - 1].body.push(
             createSassNode<'property'>({
-              body,
+              value: body,
               level: getPropLevel(),
-              line: index,
-              type: current.type,
-              value,
+              line: context.index,
+              type: context.type,
+              name: value,
             })
           );
         }
@@ -202,13 +182,13 @@ export async function AstParse(
 
       case 'variable':
         {
-          const { value, body } = parseProperty(current.line, true);
+          const { value, body } = parseProperty(context.line, true);
           const node = createSassNode<'variable'>({
-            body: body,
+            value: body,
             level: getMinLevel(),
-            line: index,
-            type: current.type,
-            value,
+            line: context.index,
+            type: context.type,
+            name: value,
           });
           pushNode(node);
         }
@@ -216,15 +196,15 @@ export async function AstParse(
 
       case 'import':
         {
-          const path = current.line.replace(importAtPathRegex, '$2');
+          const path = context.line.replace(importAtPathRegex, '$2');
           const uri = resolve(document.uri, '../', addDotSassToPath(path));
           const clampedLevel = getMinLevel();
 
           const node = createSassNode<'import'>({
             uri,
             level: clampedLevel,
-            line: index,
-            type: current.type,
+            line: context.index,
+            type: context.type,
             value: path,
           });
           pushNode(node);
@@ -237,18 +217,18 @@ export async function AstParse(
           const clampedLevel = getMinLevel();
           if (canPushAtUseOrAtForwardNode) {
             // TODO ADD @use with functionality
-            const path = current.line.replace(importAtPathRegex, '$2');
+            const path = context.line.replace(importAtPathRegex, '$2');
             const uri = resolve(document.uri, '../', addDotSassToPath(path));
-            let namespace: string | null = current.line
+            let namespace: string | null = context.line
               .replace(/(.*?as |@use)[\t ]*['"]?.*?([*\w-]*?)['"]?[\t ]*$/, '$2')
               .trim();
             namespace = namespace === '*' ? null : namespace;
 
             const node = createSassNode<'use'>({
               uri,
-              line: index,
+              line: context.index,
               namespace,
-              type: current.type,
+              type: context.type,
               value: path,
             });
             pushNode(node);
@@ -258,15 +238,15 @@ export async function AstParse(
             diagnostics.push(
               createSassDiagnostic(
                 '@useNotTopLevel',
-                createRange(index, current.distance, current.line.length)
+                createRange(context.index, context.distance, context.line.length)
               )
             );
             pushNode(
               createSassNode<'comment'>({
                 level: clampedLevel,
-                line: index,
+                line: context.index,
                 type: 'comment',
-                value: '// '.concat(current.line.trimLeft()),
+                value: '// '.concat(context.line.trimLeft()),
               })
             );
           }
@@ -277,10 +257,10 @@ export async function AstParse(
         {
           pushNode(
             createSassNode<'extend'>({
-              line: current.index,
+              line: context.index,
               type: 'extend',
               level: getPropLevel(),
-              value: current.line.replace(/^[\t ]*@extend/, '').trim(),
+              name: context.line.replace(/^[\t ]*@extend/, '').trim(),
             })
           );
         }
@@ -289,11 +269,11 @@ export async function AstParse(
         {
           pushNode(
             createSassNode<'include'>({
-              line: current.index,
+              line: context.index,
               type: 'include',
               level: getPropLevel(),
-              value: current.line.replace(/^[\t ]*(@include|\+)/, '').trim(),
-              includeType: current.line.replace(/^[\t ]*(@include|\+)/, '$1') as any,
+              name: context.line.replace(/^[\t ]*(@include|\+)/, '').trim(),
+              includeType: context.line.replace(/^[\t ]*(@include|\+)/, '$1') as any,
             })
           );
         }
@@ -301,10 +281,10 @@ export async function AstParse(
 
       case 'emptyLine':
         {
-          current.distance = scope.selectors.length * settings.tabSize;
-          current.level = scope.selectors.length;
+          context.distance = scope.selectors.length * settings.tabSize;
+          context.level = scope.selectors.length;
           pushNode(
-            createSassNode<'emptyLine'>({ line: current.index, type: 'emptyLine' })
+            createSassNode<'emptyLine'>({ line: context.index, type: 'emptyLine' })
           );
         }
         break;
@@ -314,9 +294,9 @@ export async function AstParse(
           pushNode(
             createSassNode<'comment'>({
               level: getMinLevel(),
-              line: index,
+              line: context.index,
               type: 'comment',
-              value: current.line.trimLeft(),
+              value: context.line.trimLeft(),
             }),
             false
           );
@@ -327,8 +307,8 @@ export async function AstParse(
           pushNode(
             createSassNode<'literal'>({
               type: 'literal',
-              line: current.index,
-              value: current.line,
+              line: context.index,
+              value: context.line,
             })
           );
         }
@@ -338,7 +318,7 @@ export async function AstParse(
         //TODO Handle default case ?
         //throw
         console.log(
-          `\x1b[38;2;255;0;0;1mAST: PARSE DEFAULT CASE\x1b[m Line: ${current.line} Type: ${current.type} Index: ${index}`
+          `\x1b[38;2;255;0;0;1mAST: PARSE DEFAULT CASE\x1b[m Line: ${context.line} Type: ${context.type} Index: ${context.index}`
         );
     }
   }
@@ -350,31 +330,31 @@ export async function AstParse(
   };
 
   function getPropLevel(): number {
-    return Math.min(Math.max(current.level, 1), scope.selectors.length);
+    return Math.min(Math.max(context.level, 1), scope.selectors.length);
   }
   function getMinLevel() {
-    return Math.min(current.level, scope.selectors.length);
+    return Math.min(context.level, scope.selectors.length);
   }
 
   /**Removes all nodes that should not be accessible from the current scope. */
   function limitScope() {
-    if (scope.selectors.length > current.level) {
-      scope.selectors.splice(current.level);
-      scope.variables.splice(Math.max(current.level, 1));
-      scope.imports.splice(Math.max(current.level, 1));
+    if (scope.selectors.length > context.level) {
+      scope.selectors.splice(context.level);
+      scope.variables.splice(Math.max(context.level, 1));
+      scope.imports.splice(Math.max(context.level, 1));
     }
   }
 
-  function pushNode(node: SassNode, pushDiagnostics = true) {
+  function pushNode(node: LineNode, pushDiagnostics = true) {
     // TODO EXTEND DIAGNOSTIC, invalid indentation, example, (tabSize: 2) ' .class'
-    if (current.distance < settings.tabSize || scope.selectors.length === 0) {
+    if (context.distance < settings.tabSize || scope.selectors.length === 0) {
       nodes.push(node);
-    } else if (current.level > scope.selectors.length) {
+    } else if (context.level > scope.selectors.length) {
       if (pushDiagnostics) {
         diagnostics.push(
           createSassDiagnostic(
             'invalidIndentation',
-            createRange(current.index, current.distance, current.line.length),
+            createRange(context.index, context.distance, context.line.length),
             scope.selectors.length,
             settings.tabSize,
             settings.insertSpaces
@@ -383,18 +363,18 @@ export async function AstParse(
       }
       scope.selectors[scope.selectors.length - 1].body.push(node);
     } else {
-      scope.selectors[current.level - 1].body.push(node);
+      scope.selectors[context.level - 1].body.push(node);
     }
 
     if (node.type === 'variable') {
-      if (scope.variables[current.level]) {
-        scope.variables[current.level].push(node);
+      if (scope.variables[context.level]) {
+        scope.variables[context.level].push(node);
       } else {
         scope.variables.push([node]);
       }
     } else if (node.type === 'import' || node.type === 'use') {
-      if (scope.imports[current.level]) {
-        scope.imports[current.level].push(node);
+      if (scope.imports[context.level]) {
+        scope.imports[context.level].push(node);
       } else {
         scope.imports.push([node]);
       }
@@ -405,21 +385,21 @@ export async function AstParse(
   function parseProperty<R extends boolean>(
     line: string,
     stringVal: R
-  ): { value: R extends true ? string : NodeValue[]; body: NodeValue[] } {
+  ): { value: R extends true ? string : ValueNode[]; body: ValueNode[] } {
     const split = /^[\t ]*(.*?):(.*)/.exec(line)!;
 
     const value = split[1];
     const rawExpression = split[2];
 
     return {
-      value: (stringVal ? value : parseExpression(value, current.distance)) as any,
-      body: parseExpression(rawExpression, value.length + 1 + current.distance),
+      value: (stringVal ? value : parseExpression(value, context.distance)) as any,
+      body: parseExpression(rawExpression, value.length + 1 + context.distance),
     };
   }
 
   function parseExpression(expression: string, startOffset: number, selectorMode = false) {
     let token = '';
-    const body: NodeValue[] = [];
+    const body: ValueNode[] = [];
 
     const expressionNodes: SassNodes['expression'][] = [];
     let level = 0;
@@ -428,7 +408,7 @@ export async function AstParse(
     /**Keeps a space at the start of the token if in selectorMode*/
     let addSpace = false;
 
-    const pushExpressionNode = (node: NodeValue) => {
+    const pushExpressionNode = (node: ValueNode) => {
       if (level === 0) {
         body.push(node);
       } else {
@@ -451,7 +431,7 @@ export async function AstParse(
         );
       } else if (value) {
         pushExpressionNode(
-          createSassNode<'literal'>({ type: 'literal', value })
+          createSassNode<'literalValue'>({ type: 'literalValue', value })
         );
       }
       addSpace = false;
@@ -625,7 +605,7 @@ export async function AstParse(
 
     const varNode: SassNodes['variable'] | null | undefined = scope.variables
       .flat()
-      .find((v) => v.value === name);
+      .find((v) => v.name === name);
     if (varNode) {
       return { uri: document.uri, line: varNode.line };
     }
@@ -638,7 +618,7 @@ export async function AstParse(
     diagnostics.push(
       createSassDiagnostic(
         'variableNotFound',
-        createRange(current.index, offset, offset + name.length),
+        createRange(context.index, offset, offset + name.length),
         name
       )
     );
@@ -685,9 +665,9 @@ export async function AstParse(
 
   function getLineType(line: string): keyof SassNodes {
     const isInterpolatedProp = isInterpolatedProperty(line);
-    if (current.blockCommentNode) {
+    if (context.blockCommentNode) {
       if (isBlockCommentEnd(line)) {
-        current.isLastBlockCommentLine = true;
+        context.isLastBlockCommentLine = true;
       }
       return 'blockComment';
     } else if (isEmptyOrWhitespace(line)) {
@@ -714,5 +694,42 @@ export async function AstParse(
       return 'comment';
     }
     return 'literal';
+  }
+}
+
+/**Create context, nodes etc vars based on the document type. */
+function declareParseVariables(document: FullDocument | PartialDocument) {
+  /**Stores information about the current line. */
+  const context: ASTParserCurrentContext = {
+    index: 0,
+    distance: 0,
+    line: '',
+    type: 'emptyLine',
+    level: 0,
+    blockCommentNode: null,
+    isLastBlockCommentLine: false,
+  };
+
+  const diagnostics: SassDiagnostic[] = [];
+  if ('startLine' in document) {
+    // TODO FINISH sliceNodes Function.
+    const { nodes, scope } = sliceNodes(document.nodes, document.startLine);
+
+    context.index = document.startLine;
+    if (nodes[nodes.length - 1]?.type === 'blockComment') {
+      context.type = 'blockComment';
+    }
+    const lines = new Array(document.startLine + 1).fill('').concat(document.text.split('\n'));
+    return { scope, diagnostics, nodes, context, lines, isPartial: true };
+  } else {
+    /**Stores all nodes. */
+    const nodes: LineNode[] = [];
+    const scope: ParseScope = {
+      selectors: [],
+      variables: [],
+      imports: [],
+    };
+    const lines = document.text.split('\n');
+    return { scope, diagnostics, nodes, context, lines, isPartial: false };
   }
 }

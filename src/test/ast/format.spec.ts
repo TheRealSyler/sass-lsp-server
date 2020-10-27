@@ -29,8 +29,8 @@ margin-top:  calc( #{ $var } - 20px)
           type: 'variable',
           level: 0,
           line: 0,
-          value: '$var2',
-          body: [{ type: 'literalValue', value: '20px' }],
+          name: '$var2',
+          value: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -42,8 +42,8 @@ margin-top:  calc( #{ $var } - 20px)
           type: 'variable',
           level: 0,
           line: 0,
-          value: '$var3',
-          body: [{ type: 'literalValue', value: '20px' }],
+          name: '$var3',
+          value: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -55,8 +55,8 @@ margin-top:  calc( #{ $var } - 20px)
           type: 'variable',
           level: 0,
           line: 0,
-          value: '$var4',
-          body: [{ type: 'literalValue', value: '20px' }],
+          name: '$var4',
+          value: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -82,8 +82,8 @@ margin-top:  calc( #{ $var } - 20px)
           type: 'variable',
           level: 0,
           line: 2,
-          value: '$var',
-          body: [
+          name: '$var',
+          value: [
             {
               type: 'expression',
               expressionType: 'func',
@@ -100,7 +100,7 @@ margin-top:  calc( #{ $var } - 20px)
           type: 'selector',
           level: 0,
           line: 3,
-          value: [{ type: 'literalValue', value: '.class' }],
+          name: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               type: 'import',
@@ -113,8 +113,8 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 5,
-              value: [{ type: 'literalValue', value: 'margin-top' }],
-              body: [
+              name: [{ type: 'literalValue', value: 'margin-top' }],
+              value: [
                 {
                   type: 'expression',
                   body: [
@@ -141,8 +141,8 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 6,
-              value: [{ type: 'literalValue', value: 'margin-left' }],
-              body: [
+              name: [{ type: 'literalValue', value: 'margin-left' }],
+              value: [
                 {
                   type: 'variableRef',
                   ref: { uri: `${__dirname}/files/import3.sass`, line: 0 },
@@ -154,8 +154,8 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 7,
-              value: [{ type: 'literalValue', value: 'margin-right' }],
-              body: [
+              name: [{ type: 'literalValue', value: 'margin-right' }],
+              value: [
                 {
                   type: 'variableRef',
                   ref: { uri: `${__dirname}/files/import2.sass`, line: 0 },
@@ -167,8 +167,8 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 8,
-              value: [{ type: 'literalValue', value: 'margin-bottom' }],
-              body: [
+              name: [{ type: 'literalValue', value: 'margin-bottom' }],
+              value: [
                 {
                   type: 'variableRef',
                   ref: { uri: `${__dirname}/files/import4.sass`, line: 0 },

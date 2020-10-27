@@ -51,11 +51,11 @@ export function AstStringify(file: SassFile, _settings?: Partial<FileSettings>) 
         break;
       case 'extend':
         increaseStateLineNumber(node);
-        text += addLine(`@extend ${node.value}`, node.level);
+        text += addLine(`@extend ${node.name}`, node.level);
         break;
       case 'include':
         increaseStateLineNumber(node);
-        text += addLine(`${node.includeType === '+' ? '+' : '@include '}${node.value}`, node.level);
+        text += addLine(`${node.includeType === '+' ? '+' : '@include '}${node.name}`, node.level);
         break;
       case 'import':
         increaseStateLineNumber(node);
@@ -68,13 +68,13 @@ export function AstStringify(file: SassFile, _settings?: Partial<FileSettings>) 
         break;
       case 'selector':
         increaseStateLineNumber(node);
-        text += addLine(stringifySelector(node.value), node.level);
+        text += addLine(stringifySelector(node.name), node.level);
         text += stringifyNodes(node.body);
         break;
       case 'mixin':
         increaseStateLineNumber(node);
         text += addLine(
-          `${node.mixinType === '=' ? '=' : '@mixin '}${node.value}${
+          `${node.mixinType === '=' ? '=' : '@mixin '}${node.name}${
             node.args.length === 0
               ? ''
               : node.args.reduce((acc, item, index) => {
@@ -93,12 +93,12 @@ export function AstStringify(file: SassFile, _settings?: Partial<FileSettings>) 
         break;
       case 'variable':
         increaseStateLineNumber(node);
-        text += addLine(`${node.value}:${stringifyValues(node.body)}`, node.level);
+        text += addLine(`${node.name}:${stringifyValues(node.value)}`, node.level);
         break;
       case 'property':
         increaseStateLineNumber(node);
         text += addLine(
-          `${stringifyValues(node.value, true)}:${stringifyValues(node.body)}`,
+          `${stringifyValues(node.name, true)}:${stringifyValues(node.value)}`,
           node.level
         );
         break;

@@ -25,8 +25,8 @@ test('AST: Use Scopes', async () => {
           type: 'variable',
           level: 0,
           line: 0,
-          value: '$var',
-          body: [{ type: 'literalValue', value: '20px' }],
+          name: '$var',
+          value: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -38,8 +38,8 @@ test('AST: Use Scopes', async () => {
           type: 'variable',
           level: 0,
           line: 0,
-          value: '$var2',
-          body: [{ type: 'literalValue', value: '20px' }],
+          name: '$var2',
+          value: [{ type: 'literalValue', value: '20px' }],
         },
       ],
     },
@@ -71,7 +71,7 @@ test('AST: Use Scopes', async () => {
           line: 2,
           level: 0,
           type: 'selector',
-          value: [{ type: 'literalValue', value: '.class' }],
+          name: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               type: 'comment',
@@ -83,8 +83,8 @@ test('AST: Use Scopes', async () => {
               type: 'property',
               level: 1,
               line: 4,
-              value: [{ type: 'literalValue', value: 'margin' }],
-              body: [
+              name: [{ type: 'literalValue', value: 'margin' }],
+              value: [
                 { type: 'variableRef', ref: null, value: '$var' },
                 {
                   type: 'variableRef',

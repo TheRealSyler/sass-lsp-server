@@ -21,16 +21,16 @@ test('AST: Mixin Variable Declaration Shadowing.', async () => {
         {
           type: 'variable',
           line: 0,
-          body: [{ type: 'literalValue', value: '23' }],
+          value: [{ type: 'literalValue', value: '23' }],
           level: 0,
-          value: '$test',
+          name: '$test',
         },
         {
           type: 'mixin',
           mixinType: '@mixin',
           level: 0,
           line: 1,
-          value: 'name',
+          name: 'name',
           args: [
             { body: null, value: '$test' },
             { body: [{ type: 'literalValue', value: '\'as,"$123"\'' }], value: '$test2' },
@@ -39,7 +39,7 @@ test('AST: Mixin Variable Declaration Shadowing.', async () => {
           body: [
             {
               type: 'property',
-              body: [
+              value: [
                 {
                   type: 'variableRef',
                   ref: { line: 1, uri: '/file' },
@@ -48,7 +48,7 @@ test('AST: Mixin Variable Declaration Shadowing.', async () => {
               ],
               level: 1,
               line: 2,
-              value: [{ type: 'literalValue', value: 'left' }],
+              name: [{ type: 'literalValue', value: 'left' }],
             },
           ],
         },

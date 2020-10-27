@@ -23,7 +23,7 @@ test('Complex Selector', async () => {
           type: 'selector',
           level: 0,
           line: 0,
-          value: [
+          name: [
             {
               type: 'expression',
               expressionType: 'interpolated',
@@ -37,7 +37,7 @@ test('Complex Selector', async () => {
           type: 'selector',
           level: 0,
           line: 1,
-          value: [
+          name: [
             {
               type: 'expression',
               expressionType: 'func',
@@ -54,7 +54,7 @@ test('Complex Selector', async () => {
           type: 'selector',
           level: 0,
           line: 2,
-          value: [
+          name: [
             { type: 'literalValue', value: '.class' },
             { type: 'literalValue', value: ' .class#id' },
           ],

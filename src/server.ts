@@ -7,30 +7,25 @@ import {
   ClientCapabilities,
   NotificationHandler,
   DidChangeConfigurationParams,
+  createConnection,
+  ProposedFeatures,
 } from 'vscode-languageserver';
 
 import { completion } from './languageFeatures/completion/completion';
 import { AbstractSyntaxTree } from './abstractSyntaxTree/abstractSyntaxTree';
+import {
+  LSPServerSettings,
+  defaultLSPServerSettings,
+  FileSettings,
+  defaultFileSettings,
+} from './defaultSettingsAndInterfaces';
 
-export interface LSPServerSettings {
-  maxNumberOfProblems: number;
+export function CreateServer() {
+  new SassLspServer(createConnection(ProposedFeatures.all));
 }
-export type FileSettings = {
-  tabSize: number;
-  insertSpaces: boolean;
-};
-
-export const defaultFileSettings: FileSettings = {
-  insertSpaces: false,
-  tabSize: 2,
-};
-
-export const defaultLSPServerSettings: LSPServerSettings = {
-  maxNumberOfProblems: 1000,
-};
 export class SassLspServer {
   hasConfigurationCapability = false;
-  hasWorkspaceFolderCapability = false;
+
   hasDiagnosticRelatedInformationCapability = false;
 
   globalSettings: LSPServerSettings = defaultLSPServerSettings;
@@ -43,18 +38,36 @@ export class SassLspServer {
     connection.onDidChangeConfiguration(this.onDidChangeConfiguration);
     connection.onCompletion(completion);
     connection.onDidOpenTextDocument(async ({ textDocument }) => {
-      console.log('SERVER ON OPEN', textDocument);
-      await this.ast.parseFile(
-        textDocument,
-        await this.getDocumentEditorSettings(textDocument.uri)
-      );
+      await this.ast.parse(textDocument, await this.getDocumentEditorSettings(textDocument.uri));
+    });
+    // TODO finish implementing onDidChangeDocument
+    connection.onDidChangeTextDocument(async ({ contentChanges, textDocument }) => {
+      for (let i = 0; i < contentChanges.length; i++) {
+        const change = contentChanges[i];
+        const settings = await this.getDocumentEditorSettings(textDocument.uri);
+        if ('range' in change && (await this.ast.lookUpFile(textDocument.uri, settings))) {
+          const nodes = this.ast.files[textDocument.uri].body;
+
+          this.ast.parse(
+            {
+              startLine: change.range.start.line,
+              endLine: change.range.end.line,
+              nodes: nodes,
+              text: change.text,
+              uri: textDocument.uri,
+            },
+            settings
+          );
+        } else {
+          this.ast.parse({ text: change.text, uri: textDocument.uri }, settings);
+        }
+      }
     });
 
     connection.listen();
   }
 
   private onInitialize = ({ capabilities }: InitializeParams): InitializeResult => {
-
     this.hasConfigurationCapability = this.getHasConfigurationCapability(capabilities);
 
     this.hasDiagnosticRelatedInformationCapability = this.getHasDiagnosticRelatedInformationCapability(

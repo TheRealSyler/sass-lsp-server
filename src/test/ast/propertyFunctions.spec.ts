@@ -29,14 +29,14 @@ test('AST: Property functions', async () => {
           type: 'selector',
           level: 0,
           line: 1,
-          value: [{ type: 'literalValue', value: '.class' }],
+          name: [{ type: 'literalValue', value: '.class' }],
           body: [
             {
               type: 'property',
               level: 1,
               line: 2,
-              value: [{ type: 'literalValue', value: 'border' }],
-              body: [
+              name: [{ type: 'literalValue', value: 'border' }],
+              value: [
                 { type: 'literalValue', value: 'solid' },
                 {
                   type: 'expression',
@@ -63,8 +63,8 @@ test('AST: Property functions', async () => {
               type: 'property',
               level: 1,
               line: 3,
-              value: [{ type: 'literalValue', value: 'margin' }],
-              body: [
+              name: [{ type: 'literalValue', value: 'margin' }],
+              value: [
                 {
                   type: 'expression',
                   expressionType: 'interpolated',
